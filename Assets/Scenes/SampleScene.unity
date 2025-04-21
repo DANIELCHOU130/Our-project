@@ -1947,7 +1947,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &239997061
@@ -2216,18 +2216,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80aeedf5a2cd384489b3af8bb72bba4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  informationPanel: {fileID: 0}
-  passwordPanel: {fileID: 0}
-  editPanel: {fileID: 0}
-  infoText: {fileID: 0}
-  passwordInputField: {fileID: 0}
-  editInputField: {fileID: 0}
-  errorTextPW: {fileID: 0}
-  developerButton: {fileID: 0}
-  submitPasswordButton: {fileID: 0}
-  saveEditButton: {fileID: 0}
-  backButtonPW: {fileID: 0}
-  backButtonEdit: {fileID: 0}
+  informationPanel: {fileID: 265110075}
+  passwordPanel: {fileID: 239997059}
+  editPanel: {fileID: 502727336}
+  infoText: {fileID: 939876970}
+  passwordInputField: {fileID: 1120292960}
+  editInputField: {fileID: 2135838961}
+  errorTextPW: {fileID: 1389335560}
+  developerButton: {fileID: 1329001942}
+  submitPasswordButton: {fileID: 2051275825}
+  saveEditButton: {fileID: 1623519609}
+  backButtonPW: {fileID: 1379974332}
+  backButtonEdit: {fileID: 356006649}
 --- !u!1 &267492697
 GameObject:
   m_ObjectHideFlags: 0
@@ -2363,9 +2363,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loginPanel: {fileID: 1333665540}
   registerPanel: {fileID: 121729543}
-  mainPagePanel: {fileID: 361848508}
-  settingPanel: {fileID: 655833656}
-  informationPanel: {fileID: 265110075}
+  homePanel: {fileID: 0}
   inputAccount: {fileID: 1318144458}
   inputPassword: {fileID: 313507437}
   inputUsernameReg: {fileID: 459182733}
@@ -2376,8 +2374,6 @@ MonoBehaviour:
   btnRegister: {fileID: 912109073}
   btnCreateAccount: {fileID: 1105601350}
   btnBack: {fileID: 1686213229}
-  btnSettings: {fileID: 1292584300}
-  btnInformation: {fileID: 471497800}
 --- !u!1 &275662504
 GameObject:
   m_ObjectHideFlags: 0
@@ -4333,7 +4329,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 1112, y: 2.054306}
+  m_AnchoredPosition: {x: 1112, y: 2.0543213}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &502727338
