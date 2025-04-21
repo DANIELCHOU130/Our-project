@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
@@ -10,8 +11,14 @@ public class RoomManager : MonoBehaviour
     public TMP_InputField roomIdInputField; // 房間 ID 的輸入框
     public TMP_Dropdown playerDropdown; // 顯示玩家的下拉選單
     public TMP_Text playerDataText; // 顯示玩家數據的文本
+    public Button resetButton;
 
     private List<int> playerIds = new List<int>();
+
+    void Start()
+    {
+        resetButton.onClick.AddListener(SetPlayersDataToZero);
+    }
 
     // 查詢某個房間的玩家
     public void FetchRoomPlayers()
