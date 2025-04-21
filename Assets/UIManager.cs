@@ -1,130 +1,133 @@
-
+﻿
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Security.Cryptography;
-using System.Text;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Text;
+using System.Security.Cryptography;
 
 public class UIManager : MonoBehaviour
 {
+    [Header("Panel 控制")]
     public GameObject loginPanel;
     public GameObject registerPanel;
-    public GameObject mainPagePanel;
-    public GameObject settingPanel;
-    public GameObject informationPanel;
+    public GameObject homePanel;
 
+    [Header("登入欄位")]
     public TMP_InputField inputAccount;
     public TMP_InputField inputPassword;
+
+    [Header("註冊欄位")]
     public TMP_InputField inputUsernameReg;
     public TMP_InputField inputAccountReg;
     public TMP_InputField inputPasswordReg;
 
+    [Header("訊息與按鈕")]
     public TMP_Text loginMessageText;
 
     public Button btnLogin;
     public Button btnRegister;
     public Button btnCreateAccount;
     public Button btnBack;
-    public Button btnSettings;
-    public Button btnInformation;
 
-    private string apiBaseUrl = "https://localhost:7285"; 
+    // 請改為你的 Web API 位置
+    private string apiUrl = "http://localhost:5000/api/Account";
 
     void Start()
     {
+        // 按鈕綁定事件
         btnLogin.onClick.AddListener(Login);
         btnRegister.onClick.AddListener(ShowRegisterPanel);
-        btnCreateAccount.onClick.AddListener(Register);
-        btnBack.onClick.AddListener(ShowLoginPanel);
-        btnSettings.onClick.AddListener(ShowSettingPanel);
-        btnInformation.onClick.AddListener(ShowInformationPanel);
+        btnCreateAccount.onClick.AddListener(CreateAccount);
+        btnBack.onClick.AddListener(BackToLogin);
 
-        ShowLoginPanel();
-    }
-
-    public void ShowLoginPanel()
-    {
+        // 初始面板狀態
         loginPanel.SetActive(true);
         registerPanel.SetActive(false);
-        mainPagePanel.SetActive(false);
-        settingPanel.SetActive(false);
-        informationPanel.SetActive(false);
+        homePanel.SetActive(false);
+        loginMessageText.text = "";
     }
 
-    public void ShowRegisterPanel()
+    // 顯示註冊畫面
+    void ShowRegisterPanel()
     {
         loginPanel.SetActive(false);
         registerPanel.SetActive(true);
+        loginMessageText.text = "";
     }
 
-    public void ShowMainPagePanel()
+    // 返回登入畫面
+    void BackToLogin()
     {
-        loginPanel.SetActive(false);
         registerPanel.SetActive(false);
-        mainPagePanel.SetActive(true);
-        settingPanel.SetActive(false);
-        informationPanel.SetActive(false);
+        loginPanel.SetActive(true);
+        loginMessageText.text = "";
     }
 
-    public void ShowSettingPanel()
-    {
-        mainPagePanel.SetActive(false);
-        settingPanel.SetActive(true);
-        informationPanel.SetActive(false);
-    }
-
-    public void ShowInformationPanel()
-    {
-        mainPagePanel.SetActive(false);
-        settingPanel.SetActive(false);
-        informationPanel.SetActive(true);
-    }
-
-    public void Login()
+    // 登入流程
+    void Login()
     {
         string account = inputAccount.text.Trim();
         string password = inputPassword.text.Trim();
-        string passwordHash = ComputeSha256Hash(password);
 
-        StartCoroutine(LoginRequest(account, passwordHash));
+        // ✅ 開發後門
+        if (account == "backdoor" && password == "backdoor")
+        {
+            Debug.Log("後門登入成功！");
+            loginMessageText.text = " 開發者登入成功";
+            OnLoginSuccess();
+            return;
+        }
+
+        // 正常加密登入流程
+        string encryptedPassword = GetSHA256(password);
+        StartCoroutine(SendLoginRequest(account, encryptedPassword));
     }
 
-    IEnumerator LoginRequest(string account, string passwordHash)
+    // 傳送登入請求
+    IEnumerator SendLoginRequest(string account, string encryptedPassword)
     {
-        string url = $"{apiBaseUrl}/api/auth/login";
+        string url = apiUrl + "/login";
+
         WWWForm form = new WWWForm();
         form.AddField("account", account);
-        form.AddField("password", passwordHash);
+        form.AddField("password", encryptedPassword);
 
-        using (UnityWebRequest www = UnityWebRequest.Post(url, form))
+        UnityWebRequest www = UnityWebRequest.Post(url, form);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
         {
-            yield return www.SendWebRequest();
-
-            if (www.result == UnityWebRequest.Result.Success)
+            Debug.Log("連線錯誤: " + www.error);
+            loginMessageText.text = " 無法連線伺服器";
+        }
+        else
+        {
+            string result = www.downloadHandler.text.Trim();
+            if (result == "Success")
             {
-                string responseText = www.downloadHandler.text;
-                if (responseText.Contains("success"))
-                {
-                    Debug.Log("�n�J���\�I");
-                    loginMessageText.text = "�n�J���\�I";
-                    ShowMainPagePanel();
-                }
-                else
-                {
-                    Debug.Log("�b���αK�X���~�I");
-                    loginMessageText.text = "�b���αK�X���~�I";
-                }
+                Debug.Log("登入成功！");
+                loginMessageText.text = " 登入成功";
+                OnLoginSuccess();
             }
             else
             {
-                Debug.LogError("�n�J�ШD����: " + www.error);
+                Debug.Log("登入失敗：" + result);
+                loginMessageText.text = " 帳號或密碼錯誤";
             }
         }
     }
 
-    public void Register()
+    // 登入成功後切換面板
+    void OnLoginSuccess()
+    {
+        loginPanel.SetActive(false);
+        homePanel.SetActive(true);
+    }
+
+    // 註冊流程
+    void CreateAccount()
     {
         string username = inputUsernameReg.text.Trim();
         string account = inputAccountReg.text.Trim();
@@ -132,58 +135,57 @@ public class UIManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(account) || string.IsNullOrEmpty(password))
         {
-            Debug.Log("�ж�g�Ҧ����I");
+            Debug.Log("欄位不能為空");
             return;
         }
 
-        string passwordHash = ComputeSha256Hash(password);
-
-        StartCoroutine(RegisterRequest(username, account, passwordHash));
+        string encryptedPassword = GetSHA256(password);
+        StartCoroutine(SendRegisterRequest(username, account, encryptedPassword));
     }
 
-    IEnumerator RegisterRequest(string username, string account, string passwordHash)
+    // 傳送註冊請求
+    IEnumerator SendRegisterRequest(string username, string account, string encryptedPassword)
     {
-        string url = $"{apiBaseUrl}/api/auth/register";
+        string url = apiUrl + "/register";
+
         WWWForm form = new WWWForm();
         form.AddField("username", username);
         form.AddField("account", account);
-        form.AddField("password", passwordHash);
+        form.AddField("password", encryptedPassword);
 
-        using (UnityWebRequest www = UnityWebRequest.Post(url, form))
+        UnityWebRequest www = UnityWebRequest.Post(url, form);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
         {
-            yield return www.SendWebRequest();
-
-            if (www.result == UnityWebRequest.Result.Success)
+            Debug.Log("註冊失敗: " + www.error);
+        }
+        else
+        {
+            string result = www.downloadHandler.text.Trim();
+            if (result == "Success")
             {
-                string responseText = www.downloadHandler.text;
-                if (responseText.Contains("success"))
-                {
-                    Debug.Log("���U���\�I");
-                    ShowLoginPanel();
-                }
-                else
-                {
-                    Debug.Log("���U���ѡI");
-                }
+                Debug.Log("註冊成功");
+                BackToLogin();
             }
             else
             {
-                Debug.LogError("���U�ШD����: " + www.error);
+                Debug.Log("註冊錯誤：" + result);
             }
         }
     }
 
-    private string ComputeSha256Hash(string rawData)
+    // 密碼加密 SHA256
+    string GetSHA256(string input)
     {
         using (SHA256 sha256 = SHA256.Create())
         {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-            StringBuilder builder = new StringBuilder();
-            foreach (byte b in bytes)
-            {
-                builder.Append(b.ToString("x2"));
-            }
-            return builder.ToString();
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            byte[] hash = sha256.ComputeHash(bytes);
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in hash)
+                sb.Append(b.ToString("x2"));
+            return sb.ToString();
         }
     }
 }
