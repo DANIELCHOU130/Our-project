@@ -1,3 +1,4 @@
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using TMPro;
@@ -6,11 +7,11 @@ using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    private string connectionString = "Data Source=192.168.1.175\\\\SQLEXPRESS03;Initial Catalog=ESGGAMEDB;User ID=Dan;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
+    private string connectionString = "Data Source=192.168.1.175\\SQLEXPRESS03;Initial Catalog=ESGGAMEDB;User ID=Dan;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
 
-    public TMP_InputField roomIdInputField; // ©Ğ¶¡ ID ªº¿é¤J®Ø
-    public TMP_Dropdown playerDropdown; // Åã¥Üª±®aªº¤U©Ô¿ï³æ
-    public TMP_Text playerDataText; // Åã¥Üª±®a¼Æ¾Úªº¤å¥»
+    public TMP_InputField roomIdInputField; // æˆ¿é–“ ID è¼¸å…¥æ¡†
+    public TMP_Dropdown playerDropdown; // ç©å®¶é¸å–®
+    public TMP_Text playerDataText; // é¡¯ç¤ºç©å®¶è³‡è¨Š
     public Button resetButton;
     public Button roomGetButton;
 
@@ -22,19 +23,18 @@ public class RoomManager : MonoBehaviour
         resetButton.onClick.AddListener(SetPlayersDataToZero);
 
         playerDropdown.ClearOptions();
-        playerDataText.text = "½Ğ¿ï¾Üª±®a¥HÅã¥Ü¼Æ¾Ú¡C";
+        playerDataText.text = "è«‹é¸æ“‡ç©å®¶ä»¥é¡¯ç¤ºæ•¸æ“šã€‚";
 
-        // ³]©w¤U©Ô¿ï³æªº¨Æ¥óºÊÅ¥¾¹
         playerDropdown.onValueChanged.AddListener(delegate { DisplayPlayerData(); });
     }
 
-    // ¬d¸ß¬Y­Ó©Ğ¶¡ªºª±®a
+    // æŸ¥è©¢æˆ¿é–“å…§ç©å®¶
     public void FetchRoomPlayers()
     {
         string roomId = roomIdInputField.text.Trim();
         if (string.IsNullOrEmpty(roomId))
         {
-            Debug.LogError("½Ğ¿é¤J©Ğ¶¡ ID¡I");
+            Debug.LogError("è«‹è¼¸å…¥æˆ¿é–“ IDï¼");
             return;
         }
 
@@ -49,22 +49,21 @@ public class RoomManager : MonoBehaviour
 
                 SqlDataReader reader = cmd.ExecuteReader();
 
-                playerDropdown.ClearOptions(); // ¨C¦¸¨ê·s¥ı²MªÅ¿ï¶µ
+                playerDropdown.ClearOptions();
                 playerIds.Clear();
 
                 List<string> options = new List<string>();
                 while (reader.Read())
                 {
-                    int playerId = reader.GetInt32(0); // ¨ú±oª±®a ID
+                    int playerId = reader.GetInt32(0);
                     playerIds.Add(playerId);
-                    options.Add($"ª±®a {playerId}");
+                    options.Add($"ç©å®¶ {playerId}");
                 }
 
                 if (options.Count == 0)
                 {
-                    // ¦pªGµLª±®a¼Æ¾Ú
-                    options.Add("µLª±®a¼Æ¾Ú");
-                    playerDataText.text = "¬d¸ßµ²ªG¡G¦¹©Ğ¶¡µLª±®a¼Æ¾Ú°O¿ı";
+                    options.Add("ç„¡ç©å®¶æ•¸æ“š");
+                    playerDataText.text = "æŸ¥è©¢çµæœï¼šæ­¤æˆ¿é–“ç„¡ç©å®¶æ•¸æ“šè¨˜éŒ„";
                 }
 
                 playerDropdown.AddOptions(options);
@@ -72,25 +71,18 @@ public class RoomManager : MonoBehaviour
         }
         catch (SqlException ex)
         {
-            Debug.LogError($"SQL ¿ù»~ - {ex.Message}\n{ex.StackTrace}");
+            Debug.LogError($"SQL éŒ¯èª¤ - {ex.Message}\n{ex.StackTrace}");
         }
     }
 
-    // Åã¥Ü¿ï¤¤ª±®aªº¼Æ¾Ú
+    // é¡¯ç¤ºé¸ä¸­ç©å®¶çš„è³‡è¨Š
     public void DisplayPlayerData()
     {
         int selectedIndex = playerDropdown.value;
 
-        // ¦pªG¿ï¶µµL®Ä©ÎµLª±®a¼Æ¾Ú¡A«h¸õ¥X
-        if (playerIds.Count == 0 || selectedIndex <= 0)
+        if (playerIds.Count == 0 || selectedIndex < 0 || selectedIndex >= playerIds.Count)
         {
-            playerDataText.text = "½Ğ¿ï¾Ü¦³®Äªºª±®a¨ÓÅã¥Ü¼Æ¾Ú¡C";
-            return;
-        }
-
-        if (selectedIndex < 0 || selectedIndex >= playerIds.Count)
-        {
-            Debug.LogError("½Ğ¿ï¾Ü¦³®Äªºª±®a¡I");
+            playerDataText.text = "è«‹é¸æ“‡æœ‰æ•ˆçš„ç©å®¶ä¾†é¡¯ç¤ºæ•¸æ“šã€‚";
             return;
         }
 
@@ -109,29 +101,33 @@ public class RoomManager : MonoBehaviour
 
                 if (reader.Read())
                 {
-                    float money = reader.IsDBNull(0) ? 0 : reader.GetFloat(0); // ±q¼Æ¾Ú®w¤¤Åª¨úª÷¿ú¼Æ¾Ú¡]Á×§KªÅ­È¿ù»~¡^
-                    string esg = reader.IsDBNull(1) ? "µL" : reader.GetString(1); // ³B²z¥i¯à¬° NULL ªº ESG ¼Æ¾Ú
-                    playerDataText.text = $"ª÷¿ú: {money}\nESG: {esg}";
+                    float money = reader.IsDBNull(0) ? 0 : Convert.ToSingle(reader.GetValue(0));
+                    string esg = reader.IsDBNull(1) ? "ç„¡" : reader.GetString(1);
+                    playerDataText.text = $"é‡‘éŒ¢: {money}\nESG: {esg}";
                 }
                 else
                 {
-                    playerDataText.text = "¥¼§ä¨ì¸Óª±®aªº¼Æ¾Ú¡C";
+                    playerDataText.text = "æœªæ‰¾åˆ°è©²ç©å®¶çš„æ•¸æ“šã€‚";
                 }
             }
         }
         catch (SqlException ex)
         {
-            Debug.LogError($"SQL ¿ù»~: {ex.Message}");
+            Debug.LogError($"SQL éŒ¯èª¤: {ex.Message}");
+        }
+        catch (InvalidCastException ex)
+        {
+            Debug.LogError($"è½‰å‹å¤±æ•—: {ex.Message}");
         }
     }
 
-    // ­«¸mª±®a¼Æ¾Ú¥\¯à
+    // å°‡è©²æˆ¿é–“çš„ç©å®¶è³‡æ–™é‡è¨­ç‚º 0
     public void SetPlayersDataToZero()
     {
         string roomId = roomIdInputField.text.Trim();
         if (string.IsNullOrEmpty(roomId))
         {
-            Debug.LogError("½Ğ¿é¤J©Ğ¶¡ ID¡I");
+            Debug.LogError("è«‹è¼¸å…¥æˆ¿é–“ IDï¼");
             return;
         }
 
@@ -145,18 +141,15 @@ public class RoomManager : MonoBehaviour
                 cmd.Parameters.AddWithValue("@roomId", roomId);
 
                 int rowsAffected = cmd.ExecuteNonQuery();
-                Debug.Log($"¤w±N {rowsAffected} ¦ìª±®a¼Æ¾Ú­«¸m¬° 0¡C");
+                Debug.Log($"å·²å°‡ {rowsAffected} ä½ç©å®¶æ•¸æ“šé‡ç½®ç‚º 0ã€‚");
 
-                // ²MªÅ¼Æ¾ÚÅã¥Ü®Ø
-                playerDataText.text = "©Ò¦³ª±®a¼Æ¾Ú¤w­«¸m¡I";
-
-                // §ó·s¤U©Ô®Ø¤º®e
+                playerDataText.text = "æ‰€æœ‰ç©å®¶æ•¸æ“šå·²é‡ç½®ï¼";
                 FetchRoomPlayers();
             }
         }
         catch (SqlException ex)
         {
-            Debug.LogError($"SQL ¿ù»~: {ex.Message}");
+            Debug.LogError($"SQL éŒ¯èª¤: {ex.Message}");
         }
     }
 }
