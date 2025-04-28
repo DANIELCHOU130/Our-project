@@ -1,34 +1,42 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 
-
 public class CardDisplay : MonoBehaviour
 {
-    // ­±ªO
+    // é¢æ¿
     public GameObject panelS, panelE, panelM, panelG, panelC;
+    public GameObject viewOnlyPanel; // ğŸ”¥ æ–°å¢ï¼šè§€çœ‹ç”¨å°é¢æ¿
+    public TMP_Text viewOnlyCardNameText;
+    public TMP_Text viewOnlyCardContentText;
+    public TMP_Text viewOnlyCardMoneyText;
+    public TMP_Text viewOnlyCardESGText;
+    public TMP_Text viewOnlyCardKnowText;
+    public TMP_Text viewOnlyPlayerNameText;
 
-    // ¦U¦Ûªº TextMeshProUGUI ¤¸¯À
+    // å„è‡ªçš„ TextMeshProUGUI å…ƒç´ 
     public TextMeshProUGUI cardNameTextS, cardContentTextS, cardMoneyTextS, cardESGTextS, cardKnowTextS, cardTypeTextS;
     public TextMeshProUGUI cardNameTextE, cardContentTextE, cardMoneyTextE, cardESGTextE, cardKnowTextE, cardTypeTextE;
     public TextMeshProUGUI cardNameTextM;
     public TextMeshProUGUI cardNameTextG, cardContentTextG, cardMoneyTextG, cardESGTextG, cardKnowTextG, cardTypeTextG;
 
-    // Panel C ¤¸¯À
+    // Panel C å…ƒç´ 
     public Button chooseButton1, chooseButton2, chooseButton3, chooseButton4;
     public TextMeshProUGUI chooseText1, chooseText2, chooseText3, chooseText4;
 
-    // Åã¥Ü¥d¤ùÃş«¬¤å¦r
+    // é¡¯ç¤ºå¡ç‰‡é¡å‹æ–‡å­—
     public TMP_Text textDisplay;
 
-    // Àx¦sÅÜ°Ê«áªº­È
+    // å„²å­˜è®Šå‹•å¾Œçš„å€¼
     private float modifiedESG;
     private float modifiedMoney;
 
-    // Ãö³¬«ö¶s
+    // é—œé–‰æŒ‰éˆ•
     public Button closeButtonS, closeButtonE, closeButtonM, closeButtonG;
+
+    private CardData currentCard; // ğŸ”¥ å„²å­˜ç›®å‰æŠ½åˆ°çš„å¡ç‰‡
 
     void Start()
     {
@@ -37,15 +45,14 @@ public class CardDisplay : MonoBehaviour
         panelM.SetActive(false);
         panelG.SetActive(false);
         panelC.SetActive(false);
+        viewOnlyPanel.SetActive(false); // ğŸ”¥ è§€çœ‹é¢æ¿é è¨­é—œé–‰
 
-        // µù¥UÃö³¬«ö¶s¨Æ¥ó
         closeButtonS.onClick.AddListener(() => ClosePanel(panelS));
         closeButtonE.onClick.AddListener(() => ClosePanel(panelE));
         closeButtonM.onClick.AddListener(() => ClosePanel(panelM));
         closeButtonG.onClick.AddListener(() => ClosePanel(panelG));
     }
 
-    // Åã¥Ü¹ïÀ³ªº¥d¤ù
     public void ShowCard()
     {
         string cardType = textDisplay.text.Trim();
@@ -54,67 +61,62 @@ public class CardDisplay : MonoBehaviour
         {
             case "S":
                 panelS.SetActive(true);
-                StartCoroutine(FetchCardData("ªÀ·|", panelS, cardNameTextS, cardContentTextS, cardMoneyTextS, cardESGTextS, cardKnowTextS, cardTypeTextS));
+                StartCoroutine(FetchCardData("ç¤¾æœƒ", panelS, cardNameTextS, cardContentTextS, cardMoneyTextS, cardESGTextS, cardKnowTextS, cardTypeTextS));
                 break;
             case "E":
                 panelE.SetActive(true);
-                StartCoroutine(FetchCardData("ªk³W", panelE, cardNameTextE, cardContentTextE, cardMoneyTextE, cardESGTextE, cardKnowTextE, cardTypeTextE));
+                StartCoroutine(FetchCardData("æ³•è¦", panelE, cardNameTextE, cardContentTextE, cardMoneyTextE, cardESGTextE, cardKnowTextE, cardTypeTextE));
                 break;
             case "G":
                 panelG.SetActive(true);
-                StartCoroutine(FetchCardData("³Ğ·s", panelG, cardNameTextG, cardContentTextG, cardMoneyTextG, cardESGTextG, cardKnowTextG, cardTypeTextG));
+                StartCoroutine(FetchCardData("å‰µæ–°", panelG, cardNameTextG, cardContentTextG, cardMoneyTextG, cardESGTextG, cardKnowTextG, cardTypeTextG));
                 break;
             case "M":
                 panelM.SetActive(true);
-                cardNameTextM.text = "ª÷¿ú¼ú¾±";
+                cardNameTextM.text = "é‡‘éŒ¢çå‹³";
                 break;
             default:
-                Debug.LogError("µL®ÄªºÃş«¬: " + cardType);
+                Debug.LogError("ç„¡æ•ˆçš„é¡å‹: " + cardType);
                 return;
         }
     }
 
-    // ¥Î UnityWebRequest ©I¥s API ¨ú±o¥d¤ù¸ê®Æ
     private IEnumerator FetchCardData(string dataType, GameObject panel, TextMeshProUGUI nameText, TextMeshProUGUI contentText, TextMeshProUGUI moneyText, TextMeshProUGUI esgText, TextMeshProUGUI knowText, TextMeshProUGUI typeText)
     {
         string url = $"https://localhost:7285/api/Card/random/{dataType}";
         UnityWebRequest request = UnityWebRequest.Get(url);
         request.SetRequestHeader("Content-Type", "application/json");
-
-        
         request.certificateHandler = new BypassCertificate();
-
         yield return request.SendWebRequest();
 
         if (request.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError("API ½Ğ¨D¥¢±Ñ: " + request.error);
+            Debug.LogError("API è«‹æ±‚å¤±æ•—: " + request.error);
         }
         else
         {
             string json = request.downloadHandler.text;
-            CardData card = JsonUtility.FromJson<CardData>(json);
+            currentCard = JsonUtility.FromJson<CardData>(json); // ğŸ”¥ å­˜èµ·ä¾†
 
-            // Åã¥Ü¥d¤ù¸ê®Æ
-            nameText.text = card.cardname;
-            contentText.text = "¤º®e: " + card.cardin;
-            moneyText.text = "ª÷¿ú: " + card.cardmoney;
-            esgText.text = "ESG: " + card.cardesg;
-            knowText.text = "­I´ºª¾ÃÑ: " + card.cardknow;
-            typeText.text = "ºØÃş: " + card.cardtype;
+            // é¡¯ç¤ºå¡ç‰‡è³‡æ–™
+            nameText.text = currentCard.cardname;
+            contentText.text = "å…§å®¹: " + currentCard.cardin;
+            moneyText.text = "é‡‘éŒ¢: " + currentCard.cardmoney;
+            esgText.text = "ESG: " + currentCard.cardesg;
+            knowText.text = "èƒŒæ™¯çŸ¥è­˜: " + currentCard.cardknow;
+            typeText.text = "ç¨®é¡: " + currentCard.cardtype;
 
-            // Åã¥Ü Panel C
+            // é¡¯ç¤º Panel Cï¼ˆé¸é …ï¼‰
             panelC.SetActive(true);
 
-            chooseText1.text = card.choose1;
-            chooseText2.text = card.choose2;
-            chooseText3.text = card.choose3;
-            chooseText4.text = card.choose4;
+            chooseText1.text = currentCard.choose1;
+            chooseText2.text = currentCard.choose2;
+            chooseText3.text = currentCard.choose3;
+            chooseText4.text = currentCard.choose4;
 
-            float originalMoney = card.cardmoney;
-            float originalESG = card.cardesg;
+            float originalMoney = currentCard.cardmoney;
+            float originalESG = currentCard.cardesg;
 
-            // ¸j©w¿ï¶µ«ö¶s¨Æ¥ó
             chooseButton1.onClick.RemoveAllListeners();
             chooseButton1.onClick.AddListener(() => ApplyChoice(1, originalMoney, originalESG, contentText));
 
@@ -126,10 +128,16 @@ public class CardDisplay : MonoBehaviour
 
             chooseButton4.onClick.RemoveAllListeners();
             chooseButton4.onClick.AddListener(() => ApplyChoice(4, originalMoney, originalESG, contentText));
+
+            // ğŸ”¥ æŠŠå¡ç‰‡è³‡æ–™å‚³é€çµ¦ä¼ºæœå™¨ï¼Œå»£æ’­çµ¦å…¶ä»–ç©å®¶
+            if (NetworkClient.Instance != null && !string.IsNullOrEmpty(NetworkClient.Instance.myPlayerName))
+            {
+                string cardMessage = $"CARD:{NetworkClient.Instance.myPlayerName},{currentCard.cardname},{currentCard.cardin},{currentCard.cardmoney},{currentCard.cardesg},{currentCard.cardknow},{currentCard.cardtype},{currentCard.choose1},{currentCard.choose2},{currentCard.choose3},{currentCard.choose4}";
+                NetworkClient.Instance.SendMessageToServer(cardMessage);
+            }
         }
     }
 
-    // ®Ú¾Ú¿ï¾Ü®M¥Î®ÄªG
     private void ApplyChoice(int choice, float originalMoney, float originalESG, TextMeshProUGUI contentText)
     {
         switch (choice)
@@ -152,14 +160,11 @@ public class CardDisplay : MonoBehaviour
                 break;
         }
 
-        // Åã¥Üµ²ªG
-        contentText.text += $"\n\n[¿ï¾Üµ²ªG]\nª÷¿úÅÜ¤Æ«á: {modifiedMoney:F1}\nESGÅÜ¤Æ«á: {modifiedESG:F1}";
+        contentText.text += $"\n\n[é¸æ“‡çµæœ]\né‡‘éŒ¢è®ŠåŒ–å¾Œ: {modifiedMoney:F1}\nESGè®ŠåŒ–å¾Œ: {modifiedESG:F1}";
 
-        // Ãö³¬¿ï¾Ü­±ªO
         panelC.SetActive(false);
     }
 
-    // Ãö³¬­±ªO
     private void ClosePanel(GameObject panel)
     {
         panel.SetActive(false);
@@ -186,7 +191,6 @@ public class BypassCertificate : UnityEngine.Networking.CertificateHandler
 {
     protected override bool ValidateCertificate(byte[] certificateData)
     {
-        // ¥Ã»·ªğ¦^ true¡A²¤¹L SSL ¾ÌÃÒÀË¬d¡]¥u­­´ú¸Õ¶¥¬q¡^
         return true;
     }
 }

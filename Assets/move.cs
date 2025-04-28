@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 using System;
 
@@ -16,9 +16,7 @@ public class move : MonoBehaviour
     private int currentIndex = 0;
     private bool isMoving = false;
     public int dicenumber = 0;
-    public PositionDataStorage positionDataStorage; // ³sµ² PositionDataStorage ¸}¥»
-
-    public static event Action<string> OnPositionReached;
+    public PositionDataStorage positionDataStorage;
 
     void Start()
     {
@@ -27,9 +25,10 @@ public class move : MonoBehaviour
 
     public IEnumerator MoveSteps(int steps)
     {
+        if (isMoving) yield break;
         isMoving = true;
 
-        for (int i = 0; i < steps + 1; i++) // «O«ù­ì¥»ªº²¾°Ê¨B¼Æ
+        for (int i = 0; i < steps + 1; i++)
         {
             currentIndex = (currentIndex + 1) % positions.Length;
             yield return StartCoroutine(MoveToPosition(positions[currentIndex]));
@@ -37,9 +36,17 @@ public class move : MonoBehaviour
 
         isMoving = false;
 
+        // æ›´æ–°æœ¬åœ° UI
         if (positionDataStorage != null)
         {
-            positionDataStorage.UpdatePosition(transform.position); // §ó·s UI Åã¥Ü¥N¸¹
+            positionDataStorage.UpdatePosition(transform.position);
+        }
+
+        // âš¡ ç§»å‹•çµæŸå¾Œï¼Œç™¼é€è‡ªå·±çš„åº§æ¨™åˆ°ä¼ºæœå™¨
+        if (NetworkClient.Instance != null && !string.IsNullOrEmpty(NetworkClient.Instance.myPlayerName))
+        {
+            string message = $"{NetworkClient.Instance.myPlayerName},{transform.position.x},{transform.position.y}";
+            NetworkClient.Instance.SendMessageToServer(message);
         }
     }
 
