@@ -129,7 +129,7 @@ public class CardDisplay : MonoBehaviour
             chooseButton4.onClick.RemoveAllListeners();
             chooseButton4.onClick.AddListener(() => ApplyChoice(4, originalMoney, originalESG, contentText));
 
-            // 🔥 把卡片資料傳送給伺服器，廣播給其他玩家
+            // 🔥 廣播抽卡結果
             if (NetworkClient.Instance != null && !string.IsNullOrEmpty(NetworkClient.Instance.myPlayerName))
             {
                 string cardMessage = $"CARD:{NetworkClient.Instance.myPlayerName},{currentCard.cardname},{currentCard.cardin},{currentCard.cardmoney},{currentCard.cardesg},{currentCard.cardknow},{currentCard.cardtype},{currentCard.choose1},{currentCard.choose2},{currentCard.choose3},{currentCard.choose4}";
@@ -160,9 +160,20 @@ public class CardDisplay : MonoBehaviour
                 break;
         }
 
+        // 顯示選擇結果
         contentText.text += $"\n\n[選擇結果]\n金錢變化後: {modifiedMoney:F1}\nESG變化後: {modifiedESG:F1}";
 
+        // 關閉選項面板
         panelC.SetActive(false);
+
+        // 🔥 延遲一段時間再換人
+        StartCoroutine(DelayedTurnEnd());
+    }
+
+    private IEnumerator DelayedTurnEnd()
+    {
+        yield return new WaitForSeconds(3f); // 等 3 秒讓玩家閱讀
+        TurnManager.Instance.EndTurn(); // 換下一位
     }
 
     private void ClosePanel(GameObject panel)

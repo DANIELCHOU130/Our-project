@@ -3,8 +3,8 @@ using System.Collections;
 
 public class dicechange : MonoBehaviour
 {
-    public Sprite[] diceFaces; 
-    public move moveScript; 
+    public Sprite[] diceFaces;
+    public move moveScript;
 
     private int currentIndex = 0;
     private bool isRolling = false;
@@ -12,13 +12,20 @@ public class dicechange : MonoBehaviour
 
     void Start()
     {
-        HideAllDiceParts(); 
+        HideAllDiceParts();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space) && !isRolling)
         {
+            // 檢查是否輪到自己
+            if (!TurnManager.Instance.IsMyTurn())
+            {
+                Debug.Log("不是你的回合，不能擲骰！");
+                return;
+            }
+
             rollingCoroutine = StartCoroutine(RollDice());
         }
     }
@@ -28,8 +35,8 @@ public class dicechange : MonoBehaviour
         if (diceFaces == null || diceFaces.Length == 0) yield break;
 
         isRolling = true;
-        float rollDuration = 2.0f; 
-        float rollSpeed = 0.2f; 
+        float rollDuration = 2.0f;
+        float rollSpeed = 0.2f;
         float elapsedTime = 0f;
 
         while (elapsedTime < rollDuration)
@@ -53,8 +60,8 @@ public class dicechange : MonoBehaviour
 
         if (moveScript != null)
         {
-            moveScript.dicenumber = finalIndex + 1; 
-            StartCoroutine(moveScript.MoveSteps(moveScript.dicenumber)); 
+            moveScript.dicenumber = finalIndex + 1;
+            StartCoroutine(moveScript.MoveSteps(moveScript.dicenumber));
         }
     }
 
@@ -74,6 +81,7 @@ public class dicechange : MonoBehaviour
 
     void HideAllDiceParts()
     {
-        
+        // 如果你有不同顯示方式可以放這裡
     }
 }
+

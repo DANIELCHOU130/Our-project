@@ -16,7 +16,7 @@ public class NetworkClient : MonoBehaviour
     public int serverPort = 5566;
 
     public Action<string> OnReceiveMessage; // 移動座標訊息
-    public Action<string> OnReceiveCard;    // 🔥 新增：卡片資料訊息
+    public Action<string> OnReceiveCard;    // 卡片資料訊息
     public Action<string> OnAssignedPlayerName;
 
     public string myPlayerName = "";

@@ -12,9 +12,9 @@ public class CardViewOnlyPanel : MonoBehaviour
     public TMP_Text viewOnlyCardKnowText;       // 背景知識
     public TMP_Text viewOnlyPlayerNameText;     // 誰抽到這張卡
 
-    public float autoCloseTime = 5f;             // 🔥 自動關閉秒數（預設5秒）
+    public float autoCloseTime = 5f;             //  自動關閉秒數（預設5秒）
 
-    private Coroutine closeCoroutine;           // 🔥 記錄關閉用的協程
+    private Coroutine closeCoroutine;           //  記錄關閉用的協程
 
     void Start()
     {
