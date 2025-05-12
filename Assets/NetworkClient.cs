@@ -12,8 +12,8 @@ public class NetworkClient : MonoBehaviour
     private NetworkStream stream;
     private Thread receiveThread;
 
-    public string serverIP = "你的伺服器IP";
-    public int serverPort = 5566;
+    public string serverIP = "134.208.97.162";
+    public int serverPort = 5000;
 
     public Action<string> OnReceiveMessage; // 移動座標訊息
     public Action<string> OnReceiveCard;    // 卡片資料訊息

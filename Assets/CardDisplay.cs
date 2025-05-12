@@ -83,7 +83,7 @@ public class CardDisplay : MonoBehaviour
 
     private IEnumerator FetchCardData(string dataType, GameObject panel, TextMeshProUGUI nameText, TextMeshProUGUI contentText, TextMeshProUGUI moneyText, TextMeshProUGUI esgText, TextMeshProUGUI knowText, TextMeshProUGUI typeText)
     {
-        string url = $"https://localhost:7285/api/Card/random/{dataType}";
+        string url = $"https://134.208.97.162:7285/api/Card/random/{dataType}";
         UnityWebRequest request = UnityWebRequest.Get(url);
         request.SetRequestHeader("Content-Type", "application/json");
         request.certificateHandler = new BypassCertificate();

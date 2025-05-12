@@ -16554,7 +16554,7 @@ MonoBehaviour:
   panelM: {fileID: 346790478}
   panelG: {fileID: 1376557761}
   panelC: {fileID: 137452334}
-  viewOnlyPanel: {fileID: 0}
+  viewOnlyPanel: {fileID: 1376557761}
   viewOnlyCardNameText: {fileID: 0}
   viewOnlyCardContentText: {fileID: 0}
   viewOnlyCardMoneyText: {fileID: 0}
@@ -16613,7 +16613,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3088536887547620868, guid: 7bc2270d04414af4290452dccd0a4627, type: 3}
+  m_Sprite: {fileID: 5369472713327156654, guid: c23b634deb5f70d4b99ad658189a697f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
