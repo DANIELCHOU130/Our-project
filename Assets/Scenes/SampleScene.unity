@@ -16401,7 +16401,7 @@ MonoBehaviour:
   panelM: {fileID: 346790478}
   panelG: {fileID: 1376557761}
   panelC: {fileID: 137452334}
-  viewOnlyPanel: {fileID: 0}
+  viewOnlyPanel: {fileID: 1376557761}
   viewOnlyCardNameText: {fileID: 0}
   viewOnlyCardContentText: {fileID: 0}
   viewOnlyCardMoneyText: {fileID: 0}
