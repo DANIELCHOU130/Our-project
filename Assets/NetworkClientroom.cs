@@ -12,7 +12,7 @@ public class NetworkClient2 : MonoBehaviour
     private NetworkStream stream2;
     private Thread receiveThread2;
 
-    public string serverIP2 = "你的伺服器IP"; // 例如：192.168.1.100
+    public string serverIP2 = "134.208.97.162"; 
     public int serverPort2 = 5566;
 
     public Action<string> OnReceiveMessage2; // 收到其他玩家移動資料

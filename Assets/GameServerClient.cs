@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class GameServerClient : MonoBehaviour
 {
-    public string serverIP = "127.0.0.1";
+    public string serverIP = "134.208.97.162";
     public int serverPort = 5567;
 
     private TcpClient client;
