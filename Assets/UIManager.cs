@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using System.Security.Cryptography;
+using static UnityEditor.LightingExplorerTableColumn;
 
 public class UIManager : MonoBehaviour
 {
@@ -38,7 +39,7 @@ public class UIManager : MonoBehaviour
     public Button btnSettingsBack;
     public Button btnInformationBack;
 
-    private string apiUrl = "http://localhost:5000/api/Account";
+    private string apiUrl = "https://134.208.97.162:7285/api/Account";
 
     void Start()
     {
