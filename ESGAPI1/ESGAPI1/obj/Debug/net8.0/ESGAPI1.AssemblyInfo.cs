@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ESGAPI1")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ac48fb01e479acb3cb06fceb0083c03998ada74")]
 [assembly: System.Reflection.AssemblyProductAttribute("ESGAPI1")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ESGAPI1")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
