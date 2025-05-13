@@ -3253,7 +3253,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverIP: 134.208.97.162
   serverPort: 5566
->>>>>>> 75192c648b28734d02b279251907893870e8fb31
   myPlayerName: 
 --- !u!114 &267492706
 MonoBehaviour:
@@ -8926,7 +8925,6 @@ MonoBehaviour:
   viewOnlyCardESGText: {fileID: 0}
   viewOnlyCardKnowText: {fileID: 0}
   viewOnlyPlayerNameText: {fileID: 0}
->>>>>>> 75192c648b28734d02b279251907893870e8fb31
   cardNameTextS: {fileID: 1526116245}
   cardContentTextS: {fileID: 1110646981}
   cardMoneyTextS: {fileID: 457266044}
@@ -15645,7 +15643,6 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
 
   m_AnchoredPosition: {x: -39, y: 11}
->>>>>>> 75192c648b28734d02b279251907893870e8fb31
   m_SizeDelta: {x: -827.8215, y: -301.2989}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1333665542
