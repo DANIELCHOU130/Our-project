@@ -1,3 +1,4 @@
+EXPOSE 8080
 # 使用 Microsoft 的 .NET SDK 作為建置階段
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
