@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    private string connectionString = "Data Source=192.168.1.175\\SQLEXPRESS03;Initial Catalog=ESGGAMEDB;User ID=Dan;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
+    private string connectionString = "Data Source=134.208.97.162\\SQL2022;Initial Catalog=ESGGAMEDB;User ID=LAB;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
 
     public TMP_InputField roomIdInputField; // 房間 ID 輸入框
     public TMP_Dropdown playerDropdown; // 玩家選單

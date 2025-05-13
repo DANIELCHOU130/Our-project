@@ -11,12 +11,13 @@ public class NetworkClient : MonoBehaviour
     private TcpClient client;
     private NetworkStream stream;
     private Thread receiveThread;
+    private bool isRunning = false;
 
     public string serverIP = "134.208.97.162";
     public int serverPort = 5000;
 
-    public Action<string> OnReceiveMessage; // 移動座標訊息
-    public Action<string> OnReceiveCard;    // 🔥 新增：卡片資料訊息
+    public Action<string> OnReceiveMessage;
+    public Action<string> OnReceiveCard;
     public Action<string> OnAssignedPlayerName;
 
     public string myPlayerName = "";
@@ -52,6 +53,7 @@ public class NetworkClient : MonoBehaviour
             client.Connect(serverIP, serverPort);
             stream = client.GetStream();
 
+            isRunning = true;
             receiveThread = new Thread(ReceiveData);
             receiveThread.IsBackground = true;
             receiveThread.Start();
@@ -83,11 +85,11 @@ public class NetworkClient : MonoBehaviour
     {
         try
         {
-            while (true)
+            while (isRunning)
             {
-                if (stream == null) break;
+                if (stream == null || !stream.CanRead) break;
 
-                byte[] buffer = new byte[2048]; // buffer稍微大一點
+                byte[] buffer = new byte[2048];
                 int bytesRead = stream.Read(buffer, 0, buffer.Length);
                 if (bytesRead == 0) break;
 
@@ -97,31 +99,33 @@ public class NetworkClient : MonoBehaviour
                 if (message.StartsWith("ASSIGN:"))
                 {
                     myPlayerName = message.Substring(7);
-                    Debug.Log($"取得自己的玩家代號：{myPlayerName}");
                     OnAssignedPlayerName?.Invoke(myPlayerName);
                 }
                 else if (message.StartsWith("CARD:"))
                 {
-                    Debug.Log("收到其他玩家的卡片資料！");
-                    OnReceiveCard?.Invoke(message.Substring(5)); // 去掉 "CARD:"
+                    OnReceiveCard?.Invoke(message.Substring(5));
                 }
                 else
                 {
-                    // 正常的移動資料
                     OnReceiveMessage?.Invoke(message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError("接收資料失敗: " + ex.Message);
+            if (isRunning)
+                Debug.LogError("接收資料失敗: " + ex.Message);
         }
     }
 
     public void Disconnect()
     {
-        if (receiveThread != null) receiveThread.Abort();
-        if (stream != null) stream.Close();
-        if (client != null) client.Close();
+        isRunning = false;
+
+        if (receiveThread != null && receiveThread.IsAlive)
+            receiveThread.Join(); // 等待執行緒自然結束
+
+        stream?.Close();
+        client?.Close();
     }
 }
