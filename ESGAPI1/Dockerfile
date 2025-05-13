@@ -1,18 +1,19 @@
-# 使用 .NET SDK 建置映像檔
+# 使用官方 .NET SDK 作為建置階段基礎映像
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
 WORKDIR /app
 
-# 複製 csproj 並還原套件
-COPY ESGAPI1/ESGAPI1.csproj ESGAPI1/
-RUN dotnet restore ESGAPI1/ESGAPI1.csproj
+# 複製 .csproj 並還原 NuGet 套件
+COPY ESGAPI1/ESGAPI1/ESGAPI1.csproj ./ESGAPI1/ESGAPI1/
+RUN dotnet restore ./ESGAPI1/ESGAPI1/ESGAPI1.csproj
 
-# 複製所有原始碼並建置
-COPY ESGAPI1/. ./ESGAPI1/
-WORKDIR /app/ESGAPI1
-RUN dotnet publish -c Release -o /app/publish
+# 複製所有內容並建置發行版本
+COPY . .
+RUN dotnet publish ./ESGAPI1/ESGAPI1/ESGAPI1.csproj -c Release -o /out
 
-# 使用 .NET Runtime 執行映像檔
+# 建立執行階段映像
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=build /out .
+
 ENTRYPOINT ["dotnet", "ESGAPI1.dll"]
