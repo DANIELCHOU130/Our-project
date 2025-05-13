@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
@@ -13,6 +12,8 @@ public class UIManager : MonoBehaviour
     public GameObject loginPanel;
     public GameObject registerPanel;
     public GameObject homePanel;
+    public GameObject settingsPanel;
+    public GameObject informationPanel;
 
     [Header("登入欄位")]
     public TMP_InputField inputAccount;
@@ -31,25 +32,36 @@ public class UIManager : MonoBehaviour
     public Button btnCreateAccount;
     public Button btnBack;
 
-    // 請改為你的 Web API 位置
+    public Button btnSettings;
+    public Button btnInformation;
+
+    public Button btnSettingsBack;
+    public Button btnInformationBack;
+
     private string apiUrl = "http://localhost:5000/api/Account";
 
     void Start()
     {
-        // 按鈕綁定事件
         btnLogin.onClick.AddListener(Login);
         btnRegister.onClick.AddListener(ShowRegisterPanel);
         btnCreateAccount.onClick.AddListener(CreateAccount);
         btnBack.onClick.AddListener(BackToLogin);
 
-        // 初始面板狀態
+        btnSettings.onClick.AddListener(ShowSettingsPanel);
+        btnInformation.onClick.AddListener(ShowInformationPanel);
+
+        btnSettingsBack.onClick.AddListener(BackToHomeFromSettings);
+        btnInformationBack.onClick.AddListener(BackToHomeFromInformation);
+
         loginPanel.SetActive(true);
         registerPanel.SetActive(false);
         homePanel.SetActive(false);
+        settingsPanel.SetActive(false);
+        informationPanel.SetActive(false);
+
         loginMessageText.text = "";
     }
 
-    // 顯示註冊畫面
     void ShowRegisterPanel()
     {
         loginPanel.SetActive(false);
@@ -57,7 +69,6 @@ public class UIManager : MonoBehaviour
         loginMessageText.text = "";
     }
 
-    // 返回登入畫面
     void BackToLogin()
     {
         registerPanel.SetActive(false);
@@ -65,13 +76,11 @@ public class UIManager : MonoBehaviour
         loginMessageText.text = "";
     }
 
-    // 登入流程
     void Login()
     {
         string account = inputAccount.text.Trim();
         string password = inputPassword.text.Trim();
 
-        // ✅ 開發後門
         if (account == "backdoor" && password == "backdoor")
         {
             Debug.Log("後門登入成功！");
@@ -80,12 +89,10 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        // 正常加密登入流程
         string encryptedPassword = GetSHA256(password);
         StartCoroutine(SendLoginRequest(account, encryptedPassword));
     }
 
-    // 傳送登入請求
     IEnumerator SendLoginRequest(string account, string encryptedPassword)
     {
         string url = apiUrl + "/login";
@@ -119,14 +126,14 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 登入成功後切換面板
     void OnLoginSuccess()
     {
         loginPanel.SetActive(false);
         homePanel.SetActive(true);
+        settingsPanel.SetActive(false);
+        informationPanel.SetActive(false);
     }
 
-    // 註冊流程
     void CreateAccount()
     {
         string username = inputUsernameReg.text.Trim();
@@ -143,7 +150,6 @@ public class UIManager : MonoBehaviour
         StartCoroutine(SendRegisterRequest(username, account, encryptedPassword));
     }
 
-    // 傳送註冊請求
     IEnumerator SendRegisterRequest(string username, string account, string encryptedPassword)
     {
         string url = apiUrl + "/register";
@@ -175,7 +181,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 密碼加密 SHA256
     string GetSHA256(string input)
     {
         using (SHA256 sha256 = SHA256.Create())
@@ -187,5 +192,35 @@ public class UIManager : MonoBehaviour
                 sb.Append(b.ToString("x2"));
             return sb.ToString();
         }
+    }
+
+    // 設定按鈕事件
+    void ShowSettingsPanel()
+    {
+        settingsPanel.SetActive(true);
+        informationPanel.SetActive(false);
+        homePanel.SetActive(false);
+    }
+
+    // 資訊按鈕事件
+    void ShowInformationPanel()
+    {
+        settingsPanel.SetActive(false);
+        informationPanel.SetActive(true);
+        homePanel.SetActive(false);
+    }
+
+    // 設定頁返回
+    void BackToHomeFromSettings()
+    {
+        settingsPanel.SetActive(false);
+        homePanel.SetActive(true);
+    }
+
+    // 資訊頁返回
+    void BackToHomeFromInformation()
+    {
+        informationPanel.SetActive(false);
+        homePanel.SetActive(true);
     }
 }

@@ -174,9 +174,20 @@ public class CardDisplay : MonoBehaviour
                 break;
         }
 
+        // 顯示選擇結果
         contentText.text += $"\n\n[選擇結果]\n金錢變化後: {modifiedMoney:F1}\nESG變化後: {modifiedESG:F1}";
 
+        // 關閉選項面板
         panelC.SetActive(false);
+
+        // 🔥 延遲一段時間再換人
+        StartCoroutine(DelayedTurnEnd());
+    }
+
+    private IEnumerator DelayedTurnEnd()
+    {
+        yield return new WaitForSeconds(3f); // 等 3 秒讓玩家閱讀
+        TurnManager.Instance.EndTurn(); // 換下一位
     }
 
     private void ClosePanel(GameObject panel)

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class DataManager : MonoBehaviour
 {
-    // 資料庫連接字串（請根據實際情況進行修改）
+    // 資料庫連接字串
     private string connectionString = "Data Source=192.168.1.175\\SQLEXPRESS03;Initial Catalog=ESGGAMEDB;User ID=Dan;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
 
     // 用於顯示資料的 TMP_Text 組件
