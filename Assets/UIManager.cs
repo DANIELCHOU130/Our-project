@@ -39,7 +39,8 @@ public class UIManager : MonoBehaviour
     public Button btnSettingsBack;
     public Button btnInformationBack;
 
-    private string apiUrl = "https://134.208.97.162:7285/api/Account";
+    private string apiUrl = "http://134.208.97.162:5000/api/Auth";
+
 
     void Start()
     {
@@ -91,7 +92,10 @@ public class UIManager : MonoBehaviour
         }
 
         string encryptedPassword = GetSHA256(password);
-        StartCoroutine(SendLoginRequest(account, encryptedPassword));
+        Debug.Log($"加密後密碼: {encryptedPassword}");
+        StartCoroutine(SendLoginRequest(account, encryptedPassword)); 
+        
+
     }
 
     IEnumerator SendLoginRequest(string account, string encryptedPassword)

@@ -6,7 +6,7 @@ using TMPro;
 public class RoomMonitor : MonoBehaviour
 {
     [Header("資料庫設定")]
-    [SerializeField] private string connectionString = "Data Source=192.168.1.175\\SQLEXPRESS03;Initial Catalog=ESGGAMEDB;User ID=Dan;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
+    [SerializeField] private string connectionString = "Data Source=134.208.97.162\\SQL2022;Initial Catalog=ESGGAMEDB;User ID=LAB;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
 
     [Header("玩家資訊")]
     public int myBoardId = 1;  // 自己所在的房間編號，啟動時必須設定
