@@ -94,7 +94,6 @@ public class UIManager : MonoBehaviour
         string encryptedPassword = GetSHA256(password);
         Debug.Log($"加密後密碼: {encryptedPassword}");
         StartCoroutine(SendLoginRequest(account, encryptedPassword)); 
-        
 
     }
 
