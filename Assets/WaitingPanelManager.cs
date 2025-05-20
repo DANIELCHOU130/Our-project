@@ -11,6 +11,11 @@ public class WaitingPanelManager : MonoBehaviour
     private int currentGameId;
     private Coroutine checkCoroutine;
 
+    void Start()
+    {
+        waitingPanel.SetActive(false); 
+    }
+
     public void StartWaiting(int gameId)
     {
         currentGameId = gameId;

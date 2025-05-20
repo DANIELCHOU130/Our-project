@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public GameObject otherPlayersPanel;
 
     [Header("Player Pieces")]
-    public List<GameObject> playerPieces; // 把4個棋子拉進來
+    public List<GameObject> playerPieces; 
 
     [Header("Player Data UI")]
     public TMP_Text playerMoneyText;

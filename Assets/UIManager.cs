@@ -14,6 +14,9 @@ public class UIManager : MonoBehaviour
     public GameObject homePanel;
     public GameObject settingsPanel;
     public GameObject informationPanel;
+    public GameObject waitingPanel; // ✅ 新增 Waiting Panel
+
+    public WaitingPanelManager waitingPanelManager; // ✅ 連結 WaitingPanelManager
 
     [Header("登入欄位")]
     public TMP_InputField inputAccount;
@@ -38,7 +41,10 @@ public class UIManager : MonoBehaviour
     public Button btnSettingsBack;
     public Button btnInformationBack;
 
-    private string apiUrl = "http://localhost:5000/api/Account";
+    public Button btnCreateGame; // ✅ 創建遊戲按鈕
+    public Button btnJoinGame;   // ✅ 加入遊戲按鈕
+
+    private string apiUrl = "https://134.208.97.162:7285/api/Account";
 
     void Start()
     {
@@ -53,11 +59,15 @@ public class UIManager : MonoBehaviour
         btnSettingsBack.onClick.AddListener(BackToHomeFromSettings);
         btnInformationBack.onClick.AddListener(BackToHomeFromInformation);
 
+        btnCreateGame.onClick.AddListener(CreateGame);
+        btnJoinGame.onClick.AddListener(JoinGame);
+
         loginPanel.SetActive(true);
         registerPanel.SetActive(false);
         homePanel.SetActive(false);
         settingsPanel.SetActive(false);
         informationPanel.SetActive(false);
+        waitingPanel.SetActive(false);
 
         loginMessageText.text = "";
     }
@@ -194,7 +204,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 設定按鈕事件
+    // 設定頁面
     void ShowSettingsPanel()
     {
         settingsPanel.SetActive(true);
@@ -202,7 +212,7 @@ public class UIManager : MonoBehaviour
         homePanel.SetActive(false);
     }
 
-    // 資訊按鈕事件
+    // 資訊頁面
     void ShowInformationPanel()
     {
         settingsPanel.SetActive(false);
@@ -210,17 +220,35 @@ public class UIManager : MonoBehaviour
         homePanel.SetActive(false);
     }
 
-    // 設定頁返回
+    // 設定返回
     void BackToHomeFromSettings()
     {
         settingsPanel.SetActive(false);
         homePanel.SetActive(true);
     }
 
-    // 資訊頁返回
+    // 資訊返回
     void BackToHomeFromInformation()
     {
         informationPanel.SetActive(false);
         homePanel.SetActive(true);
+    }
+
+    // ✅ 創建遊戲按鈕邏輯
+    void CreateGame()
+    {
+        Debug.Log("創建遊戲中...");
+        int dummyGameId = 123; // 實際應該從伺服器拿 gameId
+        waitingPanelManager.StartWaiting(dummyGameId);
+        homePanel.SetActive(false);
+    }
+
+    // ✅ 加入遊戲按鈕邏輯
+    void JoinGame()
+    {
+        Debug.Log("加入遊戲中...");
+        int dummyGameId = 123; // 實際應該從伺服器拿 gameId
+        waitingPanelManager.StartWaiting(dummyGameId);
+        homePanel.SetActive(false);
     }
 }
