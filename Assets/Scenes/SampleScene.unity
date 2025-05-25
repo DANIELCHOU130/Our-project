@@ -8933,7 +8933,7 @@ MonoBehaviour:
   viewOnlyCardKnowText: {fileID: 239639539}
   viewOnlyPlayerNameText: {fileID: 2035065719}
   cardNameTextS: {fileID: 1526116245}
-  cardContentTextS: {fileID: 0}
+  cardContentTextS: {fileID: 1110646981}
   cardMoneyTextS: {fileID: 0}
   cardESGTextS: {fileID: 0}
   cardKnowTextS: {fileID: 0}
@@ -8945,27 +8945,27 @@ MonoBehaviour:
   cardKnowTextE: {fileID: 0}
   cardTypeTextE: {fileID: 0}
   cardNameTextM: {fileID: 0}
-  cardNameTextG: {fileID: 0}
-  cardContentTextG: {fileID: 0}
-  cardMoneyTextG: {fileID: 0}
-  cardESGTextG: {fileID: 0}
-  cardKnowTextG: {fileID: 0}
-  cardTypeTextG: {fileID: 0}
-  chooseButton1: {fileID: 0}
-  chooseButton2: {fileID: 0}
-  chooseButton3: {fileID: 0}
-  chooseButton4: {fileID: 0}
-  chooseText1: {fileID: 0}
-  chooseText2: {fileID: 0}
-  chooseText3: {fileID: 0}
-  chooseText4: {fileID: 0}
+  cardNameTextG: {fileID: 1871276310}
+  cardContentTextG: {fileID: 630530672}
+  cardMoneyTextG: {fileID: 371994741}
+  cardESGTextG: {fileID: 1661186378}
+  cardKnowTextG: {fileID: 1098429613}
+  cardTypeTextG: {fileID: 1945052183}
+  chooseButton1: {fileID: 974950004}
+  chooseButton2: {fileID: 1983994544}
+  chooseButton3: {fileID: 1749479366}
+  chooseButton4: {fileID: 5848094}
+  chooseText1: {fileID: 1190406203}
+  chooseText2: {fileID: 1160603191}
+  chooseText3: {fileID: 1073972187}
+  chooseText4: {fileID: 543232404}
   textDisplay: {fileID: 0}
-  closeButtonS: {fileID: 0}
-  closeButtonE: {fileID: 0}
-  closeButtonM: {fileID: 0}
-  closeButtonG: {fileID: 0}
+  closeButtonS: {fileID: 1573446010}
+  closeButtonE: {fileID: 1909284427}
+  closeButtonM: {fileID: 79597088}
+  closeButtonG: {fileID: 1783882025}
   errorPanel: {fileID: 0}
-  errorText: {fileID: 0}
+  errorText: {fileID: 1389335560}
   closeErrorButton: {fileID: 0}
 --- !u!114 &775441316
 MonoBehaviour:
@@ -15827,7 +15827,7 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1333665540}
-  m_CullTransparentMesh: 1
+  m_CullTransparentMesh: 0
 --- !u!114 &1333665544
 MonoBehaviour:
   m_ObjectHideFlags: 0
