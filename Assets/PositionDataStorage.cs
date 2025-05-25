@@ -11,15 +11,23 @@ public class PositionDataStorage : MonoBehaviour
     public CardDisplay cardDisplay; // 引用 CardDisplay 類別
 
     private Vector3[] positions = {
-        new Vector3(-14f, 8.75f, 0f), new Vector3(-10f, 8.75f, 0f), new Vector3(-6f, 8.75f, 0f), new Vector3(-2f, 8.75f, 0f),
-        new Vector3(2f, 8.75f, 0f), new Vector3(6f, 8.75f, 0f), new Vector3(10f, 8.75f, 0f), new Vector3(14f, 8.75f, 0f),
-        new Vector3(14f, 5f, 0f), new Vector3(14f, 1f, 0f), new Vector3(14f, -3f, 0f), new Vector3(14f, -7f, 0f),
-        new Vector3(10f, -7f, 0f), new Vector3(6f, -7f, 0f), new Vector3(2f, -7f, 0f), new Vector3(-2f, -7f, 0f),
-        new Vector3(-6f, -7f, 0f), new Vector3(-10f, -7f, 0f), new Vector3(-14f, -7f, 0f), new Vector3(-14f, -3f, 0f),
-        new Vector3(-14f, 1f, 0f), new Vector3(-14f, 5f, 0f)
+        new Vector3(-18.8f, -10f, 0f), new Vector3(-15f, -10f, 0f), new Vector3(-12.5f, -10f, 0f), new Vector3(-10f, -10f, 0f), new Vector3(-7.5f, -10f, 0f), new Vector3(-5.1f, -10f, 0f), new Vector3(-2.65f, -10f, 0f), new Vector3(-0.17f, -10f, 0f),
+        new Vector3(2.26f, -10f, 0f), new Vector3(4.73f, -10f, 0f), new Vector3(7.13f, -10f, 0f), new Vector3(9.6f, -10f, 0f), new Vector3(12.1f, -10f, 0f), new Vector3(14.5f, -10f, 0f), new Vector3(17.75f, -10f, 0f),   //下邊
+        
+        new Vector3(17.75f, -6.5f, 0f), new Vector3(17.75f, -3.7f, 0f), new Vector3(17.75f, -1.22f, 0f), new Vector3(17.75f, 1.51f, 0f), new Vector3(17.75f, 4.16f, 0f), new Vector3(17.75f, 6.73f, 0f), new Vector3(17.75f, 9.1f, 0f),   //右邊
+
+        new Vector3(14.5f, 9.1f, 0f), new Vector3(12.1f, 9.1f, 0f), new Vector3(9.6f, 9.1f, 0f), new Vector3(7.13f, 9.1f, 0f), new Vector3(4.73f, 9.1f, 0f), new Vector3(2.26f, 9.1f, 0f), new Vector3(-0.17f, 9.1f, 0f),
+        new Vector3(-2.65f, 9.1f, 0f), new Vector3(-5.1f, 9.1f, 0f), new Vector3(-7.5f, 9.1f, 0f), new Vector3(-10f, 9.1f, 0f), new Vector3(-12.5f, 9.1f, 0f), new Vector3(-15f, 9.1f, 0f), new Vector3(-18.8f, 9.1f, 0f), //上邊
+
+        new Vector3(-18.8f, 6.73f, 0f), new Vector3(-18.8f, 4.16f, 0f), new Vector3(-18.8f, 1.51f, 0f), new Vector3(-18.8f, -1.22f, 0f), new Vector3(-18.8f, -3.7f, 0f), new Vector3(-18.8f, -6.5f, 0f)   //左邊
     };
 
-    private string[] positionValues = { "1", "2", "3", "4", "2", "3", "1", "4", "2", "4", "1", "3", "2", "3", "1", "4", "2", "3", "1", "4", "2", "4" };
+    private string[] positionValues = { 
+        "3", "4", "2", "1", "3", "2", "1", "3", "4", "1", "2", "4", "1", "2", "3", //下邊
+        "4", "2", "1", "3", "2", "1", "3",
+        "2", "1", "4", "2", "1", "4", "3", "1", "2", "3", "1", "2", "4", "3",
+        "4", "1", "2", "4", "1", "3"
+    };
 
     private Dictionary<string, string> valueToText = new Dictionary<string, string>
     {
