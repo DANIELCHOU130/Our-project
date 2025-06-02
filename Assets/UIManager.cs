@@ -5,7 +5,6 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using System.Security.Cryptography;
-using static UnityEditor.LightingExplorerTableColumn;
 
 public class UIManager : MonoBehaviour
 {
