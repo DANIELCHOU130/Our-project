@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class TurnManager : MonoBehaviour
 {
@@ -13,28 +13,29 @@ public class TurnManager : MonoBehaviour
     {
         get
         {
-            if (playerOrder == null || playerOrder.Count == 0)
-            {
-                Debug.LogWarning("【TurnManager】playerOrder 尚未初始化！");
-                return string.Empty;
-            }
-
-            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count)
-            {
-                Debug.LogWarning($"【TurnManager】currentTurnIndex {currentTurnIndex} 超出範圍！");
-                return string.Empty;
-            }
-
+            if (playerOrder == null || playerOrder.Count == 0) return string.Empty;
+            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count) return string.Empty;
             return playerOrder[currentTurnIndex];
         }
     }
 
-    public event Action<string> OnTurnChanged; // 讓外部訂閱回合變更事件
+    public event Action<string> OnTurnChanged;
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+    void Start()
+    {
+        // 啟動時註冊接收 API 訊息（TURN,xxx）
+        if (NetworkClient.Instance != null)
+        {
+            NetworkClient.Instance.OnReceiveMessage += HandleServerMessage;
+        }
     }
 
     public void InitializeTurnOrder(List<string> sortedPlayerNames)
@@ -45,30 +46,27 @@ public class TurnManager : MonoBehaviour
         Debug.Log($"回合初始化完成，第一位玩家是 {currentPlayer}");
         OnTurnChanged?.Invoke(currentPlayer);
 
-        NotifyAllPlayersTurn();
+        NotifyTurnChange();
     }
 
     public void EndTurn()
     {
-        if (playerOrder == null || playerOrder.Count == 0)
-        {
-            Debug.LogWarning("【TurnManager】EndTurn 呼叫時 playerOrder 尚未初始化！");
-            return;
-        }
+        if (playerOrder == null || playerOrder.Count == 0) return;
 
         currentTurnIndex = (currentTurnIndex + 1) % playerOrder.Count;
 
         Debug.Log($"換人，現在是 {currentPlayer} 的回合");
         OnTurnChanged?.Invoke(currentPlayer);
 
-        NotifyAllPlayersTurn();
+        NotifyTurnChange();
     }
 
-    private void NotifyAllPlayersTurn()
+    private void NotifyTurnChange()
     {
         if (NetworkClient.Instance != null)
         {
-            NetworkClient.Instance.SendMessageToServer($"TURN,{currentPlayer}");
+            string msg = $"TURN,{currentPlayer}";
+            NetworkClient.Instance.SendMessageToServer(msg);
         }
     }
 
@@ -77,5 +75,25 @@ public class TurnManager : MonoBehaviour
         if (string.IsNullOrEmpty(currentPlayer)) return false;
 
         return currentPlayer == NetworkClient.Instance.myPlayerName;
+    }
+
+    private void HandleServerMessage(string message)
+    {
+        if (message.StartsWith("TURN,"))
+        {
+            string playerName = message.Substring(5);
+            int index = playerOrder.IndexOf(playerName);
+
+            if (index != -1)
+            {
+                currentTurnIndex = index;
+                Debug.Log($"伺服器通知換人，現在是 {playerName} 的回合");
+                OnTurnChanged?.Invoke(playerName);
+            }
+            else
+            {
+                Debug.LogWarning($"收到未知玩家名稱的 TURN 訊息：{playerName}");
+            }
+        }
     }
 }

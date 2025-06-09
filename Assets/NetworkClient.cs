@@ -1,27 +1,22 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class NetworkClient : MonoBehaviour
 {
     public static NetworkClient Instance;
 
-    private TcpClient client;
-    private NetworkStream stream;
-    private Thread receiveThread;
-    private bool isRunning = false;
-
-    public string serverIP = "134.208.97.162";
-    public int serverPort = 5566;
-
-    public Action<string> OnReceiveMessage; // 移動座標訊息
-    public Action<string> OnReceiveCard;    // 卡片資料訊息
-
-    public Action<string> OnAssignedPlayerName;
-
+    public string apiBaseUrl = "http://134.208.97.162:5000/it/ESGJOIN/api/game";
     public string myPlayerName = "";
+
+    public Action<string> OnReceiveMessage;       // 接收到 TURN, MOVE, 等等
+    public Action<string> OnReceiveCard;          // 接收到 CARD:xxx
+    public Action<string> OnAssignedPlayerName;   // 分配到的名稱
+
+    private float pollingInterval = 1.5f;
+    private string lastTimestamp = "0"; // 用來記錄最後一筆訊息時間
 
     void Awake()
     {
@@ -38,95 +33,92 @@ public class NetworkClient : MonoBehaviour
 
     void Start()
     {
-        ConnectToServer();
+        StartCoroutine(JoinGame());
+        StartCoroutine(PollMessages());
     }
 
-    void OnApplicationQuit()
+    IEnumerator JoinGame()
     {
-        Disconnect();
-    }
+        UnityWebRequest www = UnityWebRequest.PostWwwForm(apiBaseUrl + "/join", "");
+        yield return www.SendWebRequest();
 
-    public void ConnectToServer()
-    {
-        try
+        if (www.result == UnityWebRequest.Result.Success)
         {
-            client = new TcpClient();
-            client.Connect(serverIP, serverPort);
-            stream = client.GetStream();
-
-            isRunning = true;
-            receiveThread = new Thread(ReceiveData);
-            receiveThread.IsBackground = true;
-            receiveThread.Start();
-
-            Debug.Log("連線到伺服器成功");
+            myPlayerName = www.downloadHandler.text;
+            Debug.Log("加入成功，玩家名稱：" + myPlayerName);
+            OnAssignedPlayerName?.Invoke(myPlayerName);
         }
-        catch (Exception ex)
+        else
         {
-            Debug.LogError("連線伺服器失敗: " + ex.Message);
+            Debug.LogError("加入遊戲失敗: " + www.error);
         }
     }
 
     public void SendMessageToServer(string message)
     {
-        if (client == null || !client.Connected) return;
+        StartCoroutine(SendMessageCoroutine(message));
+    }
 
-        try
+    IEnumerator SendMessageCoroutine(string message)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("message", message);
+
+        UnityWebRequest www = UnityWebRequest.Post(apiBaseUrl + "/message", form);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            stream.Write(data, 0, data.Length);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("傳送資料失敗: " + ex.Message);
+            Debug.LogError("傳送訊息失敗: " + www.error);
         }
     }
 
-    private void ReceiveData()
+    IEnumerator PollMessages()
     {
-        try
+        while (true)
         {
-            while (isRunning)
+            string url = $"{apiBaseUrl}/messages?since={lastTimestamp}";
+            UnityWebRequest www = UnityWebRequest.Get(url);
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                if (stream == null || !stream.CanRead) break;
+                string json = www.downloadHandler.text;
+                MessageList response = JsonUtility.FromJson<MessageList>(json);
 
-                byte[] buffer = new byte[2048];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                if (bytesRead == 0) break;
+                foreach (var msg in response.messages)
+                {
+                    lastTimestamp = msg.timestamp;
 
-                string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Debug.Log("收到資料：" + message);
+                    Debug.Log($"接收訊息：{msg.content}");
 
-                if (message.StartsWith("ASSIGN:"))
-                {
-                    myPlayerName = message.Substring(7);
-                    OnAssignedPlayerName?.Invoke(myPlayerName);
-                }
-                else if (message.StartsWith("CARD:"))
-                {
-                    OnReceiveCard?.Invoke(message.Substring(5));
-                }
-                else
-                {
-                    OnReceiveMessage?.Invoke(message);
+                    // 分類回傳
+                    if (msg.content.StartsWith("CARD:"))
+                        OnReceiveCard?.Invoke(msg.content.Substring(5));
+                    else
+                        OnReceiveMessage?.Invoke(msg.content);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            if (isRunning)
-                Debug.LogError("接收資料失敗: " + ex.Message);
+            else
+            {
+                Debug.LogWarning("輪詢失敗: " + www.error);
+            }
+
+            yield return new WaitForSeconds(pollingInterval);
         }
     }
 
-    public void Disconnect()
+    [Serializable]
+    public class Message
     {
-        isRunning = false;
+        public string sender;
+        public string content;
+        public string timestamp;
+    }
 
-        if (receiveThread != null && receiveThread.IsAlive)
-            receiveThread.Join(); // 等待執行緒自然結束
-
-        stream?.Close();
-        client?.Close();
+    [Serializable]
+    public class MessageList
+    {
+        public List<Message> messages;
     }
 }
