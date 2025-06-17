@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using System.Security.Cryptography;
+using static UnityEditor.LightingExplorerTableColumn;
 
 public class UIManager : MonoBehaviour
 {
@@ -40,6 +41,7 @@ public class UIManager : MonoBehaviour
 
     public Button btnSettingsBack;
     public Button btnInformationBack;
+
 
     public Button btnCreateGame; // ✅ 創建遊戲按鈕
     public Button btnJoinGame;   // ✅ 加入遊戲按鈕

@@ -1,127 +1,117 @@
-﻿using System;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class NetworkClient : MonoBehaviour
 {
     public static NetworkClient Instance;
 
-    private TcpClient client;
-    private NetworkStream stream;
-    private Thread receiveThread;
+    public string playerName;
+    private string baseUrl = "http://localhost:5000/api/game";
+    private DateTime lastCheckTime;
 
-    public string serverIP = "134.208.97.162";
-    public int serverPort = 5566;
-
-    public Action<string> OnReceiveMessage; // 移動座標訊息
-    public Action<string> OnReceiveCard;    // 卡片資料訊息
-    public Action<string> OnAssignedPlayerName;
-
-    public string myPlayerName = "";
+    public event Action<string> OnMessageReceived;
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
     {
-        ConnectToServer();
+        StartCoroutine(JoinGame());
+        StartCoroutine(MessagePollingLoop());
     }
 
-    void OnApplicationQuit()
+    IEnumerator JoinGame()
     {
-        Disconnect();
-    }
+        UnityWebRequest www = UnityWebRequest.Post($"{baseUrl}/join", "");
+        yield return www.SendWebRequest();
 
-    public void ConnectToServer()
-    {
-        try
+        if (www.result == UnityWebRequest.Result.Success)
         {
-            client = new TcpClient();
-            client.Connect(serverIP, serverPort);
-            stream = client.GetStream();
-
-            receiveThread = new Thread(ReceiveData);
-            receiveThread.IsBackground = true;
-            receiveThread.Start();
-
-            Debug.Log("連線到伺服器成功");
+            var json = www.downloadHandler.text;
+            var data = JsonUtility.FromJson<PlayerJoinResult>(json);
+            playerName = data.playerName;
+            Debug.Log("分配到代號：" + playerName);
         }
-        catch (Exception ex)
+        else
         {
-            Debug.LogError("連線伺服器失敗: " + ex.Message);
+            Debug.LogError("加入遊戲失敗：" + www.error);
         }
     }
 
-    public void SendMessageToServer(string message)
+    public void SendMessageToServer(string content)
     {
-        if (client == null || !client.Connected) return;
+        StartCoroutine(SendMessageCoroutine(content));
+    }
 
-        try
+    IEnumerator SendMessageCoroutine(string content)
+    {
+        GameMessage msg = new GameMessage { sender = playerName, content = content };
+        string json = JsonUtility.ToJson(msg);
+
+        UnityWebRequest www = new UnityWebRequest($"{baseUrl}/message", "POST");
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        www.downloadHandler = new DownloadHandlerBuffer();
+        www.SetRequestHeader("Content-Type", "application/json");
+
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            stream.Write(data, 0, data.Length);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("傳送資料失敗: " + ex.Message);
+            Debug.LogError("送出訊息失敗：" + www.error);
         }
     }
 
-    private void ReceiveData()
+    IEnumerator MessagePollingLoop()
     {
-        try
+        while (true)
         {
-            while (true)
+            yield return new WaitForSeconds(2f);
+
+            string sinceParam = Uri.EscapeDataString(lastCheckTime.ToString("o"));
+            UnityWebRequest www = UnityWebRequest.Get($"{baseUrl}/messages?since={sinceParam}");
+
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                if (stream == null) break;
-
-                byte[] buffer = new byte[2048]; // buffer稍微大一點
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                if (bytesRead == 0) break;
-
-                string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Debug.Log("收到資料：" + message);
-
-                if (message.StartsWith("ASSIGN:"))
+                string json = www.downloadHandler.text;
+                GameMessageList wrapper = JsonUtility.FromJson<GameMessageList>("{\"messages\":" + json + "}");
+                foreach (var msg in wrapper.messages)
                 {
-                    myPlayerName = message.Substring(7);
-                    Debug.Log($"取得自己的玩家代號：{myPlayerName}");
-                    OnAssignedPlayerName?.Invoke(myPlayerName);
-                }
-                else if (message.StartsWith("CARD:"))
-                {
-                    Debug.Log("收到其他玩家的卡片資料！");
-                    OnReceiveCard?.Invoke(message.Substring(5)); // 去掉 "CARD:"
-                }
-                else
-                {
-                    // 正常的移動資料
-                    OnReceiveMessage?.Invoke(message);
+                    if (msg.sender != playerName) // 避免收到自己
+                    {
+                        OnMessageReceived?.Invoke(msg.content);
+                        lastCheckTime = msg.timestamp;
+                    }
                 }
             }
         }
-        catch (Exception ex)
-        {
-            Debug.LogError("接收資料失敗: " + ex.Message);
-        }
     }
 
-    public void Disconnect()
+    [Serializable]
+    public class PlayerJoinResult
     {
-        if (receiveThread != null) receiveThread.Abort();
-        if (stream != null) stream.Close();
-        if (client != null) client.Close();
+        public string playerName;
+    }
+
+    [Serializable]
+    public class GameMessage
+    {
+        public string sender;
+        public string content;
+        public DateTime timestamp;
+    }
+
+    [Serializable]
+    public class GameMessageList
+    {
+        public List<GameMessage> messages;
     }
 }

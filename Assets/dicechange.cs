@@ -10,6 +10,8 @@ public class dicechange : MonoBehaviour
     private bool isRolling = false;
     private Coroutine rollingCoroutine;
 
+    public bool IsRolling => isRolling;
+
     void Start()
     {
         HideAllDiceParts();
@@ -17,20 +19,13 @@ public class dicechange : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isRolling)
+        if (Input.GetKeyDown(KeyCode.Space) && !isRolling && TurnManager.Instance.IsMyTurn())
         {
-            // 檢查是否輪到自己
-            if (!TurnManager.Instance.IsMyTurn())
-            {
-                Debug.Log("不是你的回合，不能擲骰！");
-                return;
-            }
-
             rollingCoroutine = StartCoroutine(RollDice());
         }
     }
 
-    IEnumerator RollDice()
+    public IEnumerator RollDice()
     {
         if (diceFaces == null || diceFaces.Length == 0) yield break;
 
@@ -54,7 +49,6 @@ public class dicechange : MonoBehaviour
         if (diceFaces == null || diceFaces.Length == 0) return;
 
         isRolling = false;
-
         int finalIndex = Random.Range(0, diceFaces.Length);
         ShowPart(finalIndex);
 
@@ -81,7 +75,15 @@ public class dicechange : MonoBehaviour
 
     void HideAllDiceParts()
     {
-        // 如果你有不同顯示方式可以放這裡
+        // 可選：初始化時清空顯示
+    }
+
+    // ✅ 提供外部呼叫自動擲骰
+    public void RollDiceExternally()
+    {
+        if (!isRolling)
+        {
+            rollingCoroutine = StartCoroutine(RollDice());
+        }
     }
 }
-

@@ -4,13 +4,15 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
+
     [Header("UI Panels")]
     public GameObject mapPanel;
     public GameObject playerStatusPanel;
     public GameObject otherPlayersPanel;
 
     [Header("Player Pieces")]
-    public List<GameObject> playerPieces; 
+    public List<GameObject> playerPieces;
 
     [Header("Player Data UI")]
     public TMP_Text playerMoneyText;
@@ -22,7 +24,7 @@ public class GameManager : MonoBehaviour
     public List<TMP_Text> otherPlayerESGTexts;
 
     [Header("Initial Values")]
-    public Vector3 initialPiecePosition = new Vector3(-14f, 8.75f, 0f);  
+    public Vector3 initialPiecePosition = new Vector3(-14f, 8.75f, 0f);
     public int initialMoney = 1000;
     public int initialESG = 0;
 
@@ -35,32 +37,42 @@ public class GameManager : MonoBehaviour
 
     private List<PlayerData> allPlayers = new List<PlayerData>();
 
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
     void Start()
     {
-        InitGame();
+        mapPanel.SetActive(false);
+        foreach (var piece in playerPieces)
+        {
+            piece.SetActive(false);
+        }
+        playerStatusPanel.SetActive(false);
+        otherPlayersPanel.SetActive(false);
     }
 
     public void InitGame()
     {
-        // 1. 顯示面板
         mapPanel.SetActive(true);
         playerStatusPanel.SetActive(true);
         otherPlayersPanel.SetActive(true);
 
-        // 2. 初始化棋子位置
-        foreach (var piece in playerPieces)
+        for (int i = 0; i < playerPieces.Count; i++)
         {
-            piece.transform.position = initialPiecePosition;
+            playerPieces[i].SetActive(true);
+            playerPieces[i].transform.position = initialPiecePosition;
+            playerPieces[i].name = "玩家" + (i + 1);
         }
 
-        // 3. 初始化玩家數據
         allPlayers.Clear();
         allPlayers.Add(new PlayerData() { name = "我", money = initialMoney, esg = initialESG });
         allPlayers.Add(new PlayerData() { name = "玩家2", money = initialMoney, esg = initialESG });
         allPlayers.Add(new PlayerData() { name = "玩家3", money = initialMoney, esg = initialESG });
         allPlayers.Add(new PlayerData() { name = "玩家4", money = initialMoney, esg = initialESG });
 
-        // 4. 刷新UI顯示
         RefreshPlayerStatus();
         RefreshOtherPlayersStatus();
     }

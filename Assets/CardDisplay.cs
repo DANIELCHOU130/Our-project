@@ -80,6 +80,9 @@ public class CardDisplay : MonoBehaviour
                 return;
         }
     }
+    public GameObject errorPanel; // 錯誤提示框的 Panel
+    public TMP_Text errorText; // 顯示錯誤信息的 TextMeshPro 元素
+    public Button closeErrorButton; // 關閉錯誤提示框的按鈕
 
     private IEnumerator FetchCardData(string dataType, GameObject panel, TextMeshProUGUI nameText, TextMeshProUGUI contentText, TextMeshProUGUI moneyText, TextMeshProUGUI esgText, TextMeshProUGUI knowText, TextMeshProUGUI typeText)
     {
@@ -92,6 +95,16 @@ public class CardDisplay : MonoBehaviour
         if (request.result != UnityWebRequest.Result.Success)
         {
             Debug.LogError("API 請求失敗: " + request.error);
+
+            // 顯示錯誤提示框
+            errorText.text = "無法連接到伺服器，請稍後再試！"; // 更新錯誤信息
+            errorPanel.SetActive(true); // 顯示錯誤提示框
+
+            // 按鈕點擊事件，用來關閉錯誤提示框
+            closeErrorButton.onClick.RemoveAllListeners();
+            closeErrorButton.onClick.AddListener(() => errorPanel.SetActive(false));
+
+            yield break; // 停止執行後續操作
         }
         else
         {
@@ -137,6 +150,7 @@ public class CardDisplay : MonoBehaviour
             }
         }
     }
+
 
     private void ApplyChoice(int choice, float originalMoney, float originalESG, TextMeshProUGUI contentText)
     {

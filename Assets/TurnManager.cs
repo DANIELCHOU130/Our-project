@@ -1,35 +1,31 @@
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
+using TMPro;
+using System.Collections;
 
 public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance;
 
-    public List<string> playerOrder = new List<string>(); // ±Æ¦n¶¶§Çªºª±®a ID
+    public List<string> playerOrder = new List<string>();
     private int currentTurnIndex = 0;
+
+    public TMP_Text currentTurnText;
+    public float autoRollDelay = 40f;
+    private Coroutine autoRollCoroutine;
 
     public string currentPlayer
     {
         get
         {
-            if (playerOrder == null || playerOrder.Count == 0)
-            {
-                Debug.LogWarning("¡iTurnManager¡jplayerOrder ©|¥¼ªì©l¤Æ¡I");
-                return string.Empty;
-            }
-
-            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count)
-            {
-                Debug.LogWarning($"¡iTurnManager¡jcurrentTurnIndex {currentTurnIndex} ¶W¥X½d³ò¡I");
-                return string.Empty;
-            }
-
+            if (playerOrder == null || playerOrder.Count == 0) return string.Empty;
+            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count) return string.Empty;
             return playerOrder[currentTurnIndex];
         }
     }
 
-    public event Action<string> OnTurnChanged; // Åı¥~³¡­q¾\¦^¦XÅÜ§ó¨Æ¥ó
+    public event Action<string> OnTurnChanged;
 
     void Awake()
     {
@@ -41,27 +37,20 @@ public class TurnManager : MonoBehaviour
     {
         playerOrder = sortedPlayerNames;
         currentTurnIndex = 0;
-
-        Debug.Log($"¦^¦Xªì©l¤Æ§¹¦¨¡A²Ä¤@¦ìª±®a¬O {currentPlayer}");
         OnTurnChanged?.Invoke(currentPlayer);
-
         NotifyAllPlayersTurn();
+        UpdateTurnUI();
+        StartAutoRollCountdown();
     }
 
     public void EndTurn()
     {
-        if (playerOrder == null || playerOrder.Count == 0)
-        {
-            Debug.LogWarning("¡iTurnManager¡jEndTurn ©I¥s®É playerOrder ©|¥¼ªì©l¤Æ¡I");
-            return;
-        }
-
+        if (playerOrder == null || playerOrder.Count == 0) return;
         currentTurnIndex = (currentTurnIndex + 1) % playerOrder.Count;
-
-        Debug.Log($"´«¤H¡A²{¦b¬O {currentPlayer} ªº¦^¦X");
         OnTurnChanged?.Invoke(currentPlayer);
-
         NotifyAllPlayersTurn();
+        UpdateTurnUI();
+        StartAutoRollCountdown();
     }
 
     private void NotifyAllPlayersTurn()
@@ -72,10 +61,42 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+    private void UpdateTurnUI()
+    {
+        if (currentTurnText != null)
+        {
+            currentTurnText.text = $"ç›®å‰å›åˆï¼š{currentPlayer}";
+        }
+    }
+
     public bool IsMyTurn()
     {
-        if (string.IsNullOrEmpty(currentPlayer)) return false;
-
         return currentPlayer == NetworkClient.Instance.myPlayerName;
+    }
+
+    private void StartAutoRollCountdown()
+    {
+        if (autoRollCoroutine != null)
+            StopCoroutine(autoRollCoroutine);
+
+        if (IsMyTurn())
+        {
+            autoRollCoroutine = StartCoroutine(AutoRollAfterDelay());
+        }
+    }
+
+    private IEnumerator AutoRollAfterDelay()
+    {
+        yield return new WaitForSeconds(autoRollDelay);
+
+        if (IsMyTurn())
+        {
+            Debug.Log("â± é€¾æ™‚æœªæ“²éª°ï¼Œè‡ªå‹•æ“²éª°ä¸­...");
+            dicechange dice = FindObjectOfType<dicechange>();
+            if (dice != null && !dice.IsRolling)
+            {
+                dice.RollDiceExternally();
+            }
+        }
     }
 }
