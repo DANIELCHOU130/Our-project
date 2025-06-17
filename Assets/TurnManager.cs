@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 嚜簑sing System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System.Collections;
+=======
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
 
 public class TurnManager : MonoBehaviour
 {
@@ -29,8 +35,19 @@ public class TurnManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+    void Start()
+    {
+        // 啟動時註冊接收 API 訊息（TURN,xxx）
+        if (NetworkClient.Instance != null)
+        {
+            NetworkClient.Instance.OnReceiveMessage += HandleServerMessage;
+        }
     }
 
     public void InitializeTurnOrder(List<string> sortedPlayerNames)
@@ -38,26 +55,41 @@ public class TurnManager : MonoBehaviour
         playerOrder = sortedPlayerNames;
         currentTurnIndex = 0;
         OnTurnChanged?.Invoke(currentPlayer);
+<<<<<<< HEAD
         NotifyAllPlayersTurn();
         UpdateTurnUI();
         StartAutoRollCountdown();
+=======
+
+        NotifyTurnChange();
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
     }
 
     public void EndTurn()
     {
         if (playerOrder == null || playerOrder.Count == 0) return;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
         currentTurnIndex = (currentTurnIndex + 1) % playerOrder.Count;
         OnTurnChanged?.Invoke(currentPlayer);
+<<<<<<< HEAD
         NotifyAllPlayersTurn();
         UpdateTurnUI();
         StartAutoRollCountdown();
+=======
+
+        NotifyTurnChange();
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
     }
 
-    private void NotifyAllPlayersTurn()
+    private void NotifyTurnChange()
     {
         if (NetworkClient.Instance != null)
         {
-            NetworkClient.Instance.SendMessageToServer($"TURN,{currentPlayer}");
+            string msg = $"TURN,{currentPlayer}";
+            NetworkClient.Instance.SendMessageToServer(msg);
         }
     }
 
@@ -74,6 +106,7 @@ public class TurnManager : MonoBehaviour
         return currentPlayer == NetworkClient.Instance.myPlayerName;
     }
 
+<<<<<<< HEAD
     private void StartAutoRollCountdown()
     {
         if (autoRollCoroutine != null)
@@ -96,6 +129,24 @@ public class TurnManager : MonoBehaviour
             if (dice != null && !dice.IsRolling)
             {
                 dice.RollDiceExternally();
+=======
+    private void HandleServerMessage(string message)
+    {
+        if (message.StartsWith("TURN,"))
+        {
+            string playerName = message.Substring(5);
+            int index = playerOrder.IndexOf(playerName);
+
+            if (index != -1)
+            {
+                currentTurnIndex = index;
+                Debug.Log($"伺服器通知換人，現在是 {playerName} 的回合");
+                OnTurnChanged?.Invoke(playerName);
+            }
+            else
+            {
+                Debug.LogWarning($"收到未知玩家名稱的 TURN 訊息：{playerName}");
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
             }
         }
     }

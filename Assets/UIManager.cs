@@ -5,7 +5,6 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using System.Security.Cryptography;
-using static UnityEditor.LightingExplorerTableColumn;
 
 public class UIManager : MonoBehaviour
 {
@@ -42,11 +41,16 @@ public class UIManager : MonoBehaviour
     public Button btnSettingsBack;
     public Button btnInformationBack;
 
+<<<<<<< HEAD
 
     public Button btnCreateGame; // ✅ 創建遊戲按鈕
     public Button btnJoinGame;   // ✅ 加入遊戲按鈕
 
     private string apiUrl = "https://134.208.97.162:7285/api/Account";
+=======
+    private string apiUrl = "http://134.208.97.162:5000/api/Auth";
+
+>>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
 
     void Start()
     {
@@ -102,7 +106,9 @@ public class UIManager : MonoBehaviour
         }
 
         string encryptedPassword = GetSHA256(password);
-        StartCoroutine(SendLoginRequest(account, encryptedPassword));
+        Debug.Log($"加密後密碼: {encryptedPassword}");
+        StartCoroutine(SendLoginRequest(account, encryptedPassword)); 
+
     }
 
     IEnumerator SendLoginRequest(string account, string encryptedPassword)
