@@ -41,16 +41,15 @@ public class UIManager : MonoBehaviour
     public Button btnSettingsBack;
     public Button btnInformationBack;
 
-<<<<<<< HEAD
+
 
     public Button btnCreateGame; // ✅ 創建遊戲按鈕
     public Button btnJoinGame;   // ✅ 加入遊戲按鈕
 
-    private string apiUrl = "https://134.208.97.162:7285/api/Account";
-=======
+ 
     private string apiUrl = "http://134.208.97.162:5000/api/Auth";
 
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
+
 
     void Start()
     {

@@ -1,14 +1,8 @@
-<<<<<<< HEAD
-ï»¿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using System.Collections;
-=======
+ï»¿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
 
 public class TurnManager : MonoBehaviour
 {
@@ -16,37 +10,35 @@ public class TurnManager : MonoBehaviour
 
     public List<string> playerOrder = new List<string>();
     private int currentTurnIndex = 0;
-
-    public TMP_Text currentTurnText;
-    public float autoRollDelay = 40f;
-    private Coroutine autoRollCoroutine;
+    private int currentRoundCount = 0;
 
     public string currentPlayer
     {
         get
         {
-            if (playerOrder == null || playerOrder.Count == 0) return string.Empty;
-            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count) return string.Empty;
+            if (playerOrder == null || playerOrder.Count == 0)
+                return string.Empty;
+            if (currentTurnIndex < 0 || currentTurnIndex >= playerOrder.Count)
+                return string.Empty;
             return playerOrder[currentTurnIndex];
         }
     }
 
     public event Action<string> OnTurnChanged;
 
+    private Coroutine autoRollCoroutine;
+
     void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
     {
-        // ±Ò°Ê®Éµù¥U±µ¦¬ API °T®§¡]TURN,xxx¡^
         if (NetworkClient.Instance != null)
         {
-            NetworkClient.Instance.OnReceiveMessage += HandleServerMessage;
+            NetworkClient.Instance.OnMessageReceived += HandleNetworkMessage;
         }
     }
 
@@ -54,100 +46,88 @@ public class TurnManager : MonoBehaviour
     {
         playerOrder = sortedPlayerNames;
         currentTurnIndex = 0;
-        OnTurnChanged?.Invoke(currentPlayer);
-<<<<<<< HEAD
-        NotifyAllPlayersTurn();
-        UpdateTurnUI();
-        StartAutoRollCountdown();
-=======
+        currentRoundCount = 1;
 
-        NotifyTurnChange();
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
+        Debug.Log($"å›åˆåˆå§‹åŒ–å®Œæˆï¼Œç¬¬ä¸€ä½ç©å®¶æ˜¯ {currentPlayer}");
+        OnTurnChanged?.Invoke(currentPlayer);
+        NotifyAllPlayersTurn();
+
+        StartAutoRollTimer();
     }
 
     public void EndTurn()
     {
-        if (playerOrder == null || playerOrder.Count == 0) return;
-<<<<<<< HEAD
-=======
+        if (playerOrder == null || playerOrder.Count == 0)
+            return;
 
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
         currentTurnIndex = (currentTurnIndex + 1) % playerOrder.Count;
-        OnTurnChanged?.Invoke(currentPlayer);
-<<<<<<< HEAD
-        NotifyAllPlayersTurn();
-        UpdateTurnUI();
-        StartAutoRollCountdown();
-=======
 
-        NotifyTurnChange();
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
+        if (currentTurnIndex == 0)
+        {
+            currentRoundCount++;
+            Debug.Log($"====== é€²å…¥ç¬¬ {currentRoundCount} å›åˆ ======");
+        }
+
+        Debug.Log($"æ›äººï¼Œç¾åœ¨æ˜¯ {currentPlayer} çš„å›åˆ");
+        OnTurnChanged?.Invoke(currentPlayer);
+        NotifyAllPlayersTurn();
+
+        StartAutoRollTimer();
     }
 
-    private void NotifyTurnChange()
+    private void NotifyAllPlayersTurn()
     {
         if (NetworkClient.Instance != null)
         {
-            string msg = $"TURN,{currentPlayer}";
-            NetworkClient.Instance.SendMessageToServer(msg);
+            NetworkClient.Instance.SendMessageToServer($"TURN,{currentPlayer}");
         }
     }
 
-    private void UpdateTurnUI()
+    private void HandleNetworkMessage(string msg)
     {
-        if (currentTurnText != null)
+        if (msg.StartsWith("TURN,"))
         {
-            currentTurnText.text = $"ç›®å‰å›åˆï¼š{currentPlayer}";
+            string player = msg.Substring(5);
+            currentTurnIndex = playerOrder.IndexOf(player);
+            Debug.Log($"åŒæ­¥æ”¶åˆ°å›åˆè³‡è¨Šï¼Œç¾åœ¨è¼ªåˆ° {player}");
+            OnTurnChanged?.Invoke(currentPlayer);
+            StartAutoRollTimer();
         }
     }
 
     public bool IsMyTurn()
     {
-        return currentPlayer == NetworkClient.Instance.myPlayerName;
+        return currentPlayer == NetworkClient.Instance?.playerName;
     }
 
-<<<<<<< HEAD
-    private void StartAutoRollCountdown()
+    private void StartAutoRollTimer()
     {
         if (autoRollCoroutine != null)
             StopCoroutine(autoRollCoroutine);
 
         if (IsMyTurn())
-        {
-            autoRollCoroutine = StartCoroutine(AutoRollAfterDelay());
-        }
+            autoRollCoroutine = StartCoroutine(AutoRollDiceAfterDelay(40f));
     }
 
-    private IEnumerator AutoRollAfterDelay()
+    private IEnumerator AutoRollDiceAfterDelay(float delaySeconds)
     {
-        yield return new WaitForSeconds(autoRollDelay);
+        float elapsed = 0f;
+        while (elapsed < delaySeconds)
+        {
+            if (!IsMyTurn()) yield break;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
 
         if (IsMyTurn())
         {
-            Debug.Log("â± é€¾æ™‚æœªæ“²éª°ï¼Œè‡ªå‹•æ“²éª°ä¸­...");
-            dicechange dice = FindObjectOfType<dicechange>();
-            if (dice != null && !dice.IsRolling)
-            {
-                dice.RollDiceExternally();
-=======
-    private void HandleServerMessage(string message)
-    {
-        if (message.StartsWith("TURN,"))
-        {
-            string playerName = message.Substring(5);
-            int index = playerOrder.IndexOf(playerName);
-
-            if (index != -1)
-            {
-                currentTurnIndex = index;
-                Debug.Log($"¦øªA¾¹³qª¾´«¤H¡A²{¦b¬O {playerName} ªº¦^¦X");
-                OnTurnChanged?.Invoke(playerName);
-            }
-            else
-            {
-                Debug.LogWarning($"¦¬¨ì¥¼ª¾ª±®a¦WºÙªº TURN °T®§¡G{playerName}");
->>>>>>> 22d1680faaedc46c26be3edcbe6ab6fcac0aef34
-            }
+            Debug.Log("â° 40ç§’æœªå‹•ä½œï¼Œè‡ªå‹•æ“²éª°ï¼");
+            FindObjectOfType<dicechange>()?.RollDiceAuto();
         }
+    }
+
+    public int GetCurrentRound()
+    {
+        return currentRoundCount;
     }
 }

@@ -1,75 +1,97 @@
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class OtherPlayerController : MonoBehaviour
 {
     [System.Serializable]
     public class PlayerPiece
     {
-        public string playerName;      // ™±Æa•N∏π (¶p Player2, Player3, Player4)
-        public GameObject pieceObject; // πÔ¿≥™∫¥—§l™´•Û
+        public string playerName;
+        public GameObject pieceObject;
+    }
+
+    [System.Serializable]
+    public class PlayerPosition
+    {
+        public string playerName;
+        public float posX;
+        public float posY;
     }
 
     public List<PlayerPiece> playerPieces = new List<PlayerPiece>();
+    private const string apiUrl = "http://134.208.97.162:5000/it/ROOMAPI/api/room/positions";
 
-    void Start()
+    private void Start()
     {
-        if (NetworkClient.Instance != null)
+        StartCoroutine(PollOtherPlayers());
+    }
+
+    private IEnumerator PollOtherPlayers()
+    {
+        while (true)
         {
-            NetworkClient.Instance.OnReceiveMessage += OnReceiveNetworkMessage;
+            yield return FetchPlayerPositions();
+            yield return new WaitForSeconds(1.5f);
         }
     }
 
-    void OnDestroy()
+    private IEnumerator FetchPlayerPositions()
     {
-        if (NetworkClient.Instance != null)
+        UnityWebRequest request = UnityWebRequest.Get(apiUrl);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
         {
-            NetworkClient.Instance.OnReceiveMessage -= OnReceiveNetworkMessage;
-        }
-    }
+            string json = request.downloadHandler.text;
+            var positions = JsonHelper.FromJson<PlayerPosition>(json);
 
-    private void OnReceiveNetworkMessage(string message)
-    {
-        // πw¥¡∏ÍÆ∆ÆÊ¶°: "Player2,10,8.75"
-        string[] parts = message.Split(',');
-        if (parts.Length != 3) return;
-
-        string playerName = parts[0];
-        if (float.TryParse(parts[1], out float posX) && float.TryParse(parts[2], out float posY))
-        {
-            // ¡◊ßK¶€§v¶¨®Ï¶€§v
-            if (playerName == NetworkClient.Instance.myPlayerName)
-                return;
-
-            MovePlayerPiece(playerName, new Vector3(posX, posY, 0f));
-        }
-    }
-
-    private void MovePlayerPiece(string playerName, Vector3 targetPosition)
-    {
-        foreach (var playerPiece in playerPieces)
-        {
-            if (playerPiece.playerName == playerName)
+            foreach (var pos in positions)
             {
-                StartCoroutine(MoveSmooth(playerPiece.pieceObject.transform, targetPosition));
-                break;
+                if (pos.playerName == NetworkClient.Instance.myPlayerName) continue;
+
+                var piece = playerPieces.Find(p => p.playerName == pos.playerName);
+                if (piece != null)
+                {
+                    StartCoroutine(MoveSmooth(piece.pieceObject.transform, new Vector3(pos.posX, pos.posY, 0f)));
+                }
             }
         }
+        else
+        {
+            Debug.LogError("ÂèñÂæóÂÖ∂‰ªñÁé©ÂÆ∂‰ΩçÁΩÆÂ§±Êïó: " + request.error);
+        }
     }
 
-    private System.Collections.IEnumerator MoveSmooth(Transform piece, Vector3 targetPosition)
+    private IEnumerator MoveSmooth(Transform piece, Vector3 targetPosition)
     {
         Vector3 startPos = piece.position;
         float elapsedTime = 0f;
-        float moveDuration = 0.5f; // ≤æ∞ ™·∂O™∫Æ…∂°
+        const float duration = 0.5f;
 
-        while (elapsedTime < moveDuration)
+        while (elapsedTime < duration)
         {
-            piece.position = Vector3.Lerp(startPos, targetPosition, elapsedTime / moveDuration);
+            piece.position = Vector3.Lerp(startPos, targetPosition, elapsedTime / duration);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
         piece.position = targetPosition;
+    }
+
+    public static class JsonHelper
+    {
+        [System.Serializable]
+        private class Wrapper<T>
+        {
+            public T[] Items;
+        }
+
+        public static T[] FromJson<T>(string json)
+        {
+            string wrappedJson = "{\"Items\":" + json + "}";
+            return JsonUtility.FromJson<Wrapper<T>>(wrappedJson).Items;
+        }
     }
 }

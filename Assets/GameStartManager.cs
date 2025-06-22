@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
         public int esg;
     }
 
-    private List<PlayerData> allPlayers = new List<PlayerData>();
+    private readonly List<PlayerData> allPlayers = new List<PlayerData>();
 
     void Awake()
     {
@@ -46,12 +46,11 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         mapPanel.SetActive(false);
-        foreach (var piece in playerPieces)
-        {
-            piece.SetActive(false);
-        }
         playerStatusPanel.SetActive(false);
         otherPlayersPanel.SetActive(false);
+
+        foreach (var piece in playerPieces)
+            piece.SetActive(false);
     }
 
     public void InitGame()
@@ -60,18 +59,23 @@ public class GameManager : MonoBehaviour
         playerStatusPanel.SetActive(true);
         otherPlayersPanel.SetActive(true);
 
+        allPlayers.Clear();
+
         for (int i = 0; i < playerPieces.Count; i++)
         {
+            string playerName = i == 0 ? "我" : $"玩家{i + 1}";
+
             playerPieces[i].SetActive(true);
             playerPieces[i].transform.position = initialPiecePosition;
-            playerPieces[i].name = "玩家" + (i + 1);
-        }
+            playerPieces[i].name = playerName;
 
-        allPlayers.Clear();
-        allPlayers.Add(new PlayerData() { name = "我", money = initialMoney, esg = initialESG });
-        allPlayers.Add(new PlayerData() { name = "玩家2", money = initialMoney, esg = initialESG });
-        allPlayers.Add(new PlayerData() { name = "玩家3", money = initialMoney, esg = initialESG });
-        allPlayers.Add(new PlayerData() { name = "玩家4", money = initialMoney, esg = initialESG });
+            allPlayers.Add(new PlayerData()
+            {
+                name = playerName,
+                money = initialMoney,
+                esg = initialESG
+            });
+        }
 
         RefreshPlayerStatus();
         RefreshOtherPlayersStatus();
@@ -80,8 +84,8 @@ public class GameManager : MonoBehaviour
     private void RefreshPlayerStatus()
     {
         var myData = allPlayers[0];
-        playerMoneyText.text = "金錢：" + myData.money.ToString();
-        playerESGText.text = "ESG：" + myData.esg.ToString();
+        playerMoneyText.text = $"金錢：{myData.money}";
+        playerESGText.text = $"ESG：{myData.esg}";
     }
 
     private void RefreshOtherPlayersStatus()
@@ -89,8 +93,8 @@ public class GameManager : MonoBehaviour
         for (int i = 1; i < allPlayers.Count; i++)
         {
             otherPlayerNameTexts[i - 1].text = allPlayers[i].name;
-            otherPlayerMoneyTexts[i - 1].text = "金錢：" + allPlayers[i].money.ToString();
-            otherPlayerESGTexts[i - 1].text = "ESG：" + allPlayers[i].esg.ToString();
+            otherPlayerMoneyTexts[i - 1].text = $"金錢：{allPlayers[i].money}";
+            otherPlayerESGTexts[i - 1].text = $"ESG：{allPlayers[i].esg}";
         }
     }
 }

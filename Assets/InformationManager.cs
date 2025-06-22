@@ -4,22 +4,26 @@ using UnityEngine.UI;
 
 public class InformationManager : MonoBehaviour
 {
+    [Header("Panels")]
     public GameObject informationPanel;
     public GameObject passwordPanel;
     public GameObject editPanel;
 
+    [Header("UI Components")]
     public TextMeshProUGUI infoText;
     public TMP_InputField passwordInputField;
     public TMP_InputField editInputField;
     public TextMeshProUGUI errorTextPW;
 
+    [Header("Buttons")]
     public Button developerButton;
     public Button submitPasswordButton;
     public Button saveEditButton;
     public Button backButtonPW;
     public Button backButtonEdit;
 
-    private string correctPassword = "changetext14";
+    private const string CorrectPassword = "changetext14";
+    private const string SavedInfoKey = "SavedInfoText";
 
     void Start()
     {
@@ -27,59 +31,56 @@ public class InformationManager : MonoBehaviour
         editPanel.SetActive(false);
         errorTextPW.text = "";
 
-        // 註冊按鈕事件
         developerButton.onClick.AddListener(OpenPasswordPanel);
         submitPasswordButton.onClick.AddListener(CheckPassword);
         saveEditButton.onClick.AddListener(SaveNewText);
         backButtonPW.onClick.AddListener(ClosePasswordPanel);
         backButtonEdit.onClick.AddListener(CloseEditPanel);
 
-        // 載入儲存的留言
-        if (PlayerPrefs.HasKey("SavedInfoText"))
+        if (PlayerPrefs.HasKey(SavedInfoKey))
         {
-            infoText.text = PlayerPrefs.GetString("SavedInfoText");
+            infoText.text = PlayerPrefs.GetString(SavedInfoKey);
         }
     }
 
-    void OpenPasswordPanel()
+    private void OpenPasswordPanel()
     {
         passwordPanel.SetActive(true);
         errorTextPW.text = "";
     }
 
-    void CheckPassword()
+    private void CheckPassword()
     {
-        if (passwordInputField.text == correctPassword)
+        if (passwordInputField.text == CorrectPassword)
         {
             passwordPanel.SetActive(false);
             editPanel.SetActive(true);
             editInputField.text = infoText.text;
-            passwordInputField.text = "";
-            errorTextPW.text = "";
         }
         else
         {
             errorTextPW.text = "密碼錯誤，請重試。";
-            passwordInputField.text = "";
         }
+        passwordInputField.text = "";
     }
 
-    void SaveNewText()
+    private void SaveNewText()
     {
-        infoText.text = editInputField.text;
-        PlayerPrefs.SetString("SavedInfoText", editInputField.text); // 儲存
+        string newText = editInputField.text;
+        infoText.text = newText;
+        PlayerPrefs.SetString(SavedInfoKey, newText);
         PlayerPrefs.Save();
         editPanel.SetActive(false);
     }
 
-    void ClosePasswordPanel()
+    private void ClosePasswordPanel()
     {
         passwordPanel.SetActive(false);
         passwordInputField.text = "";
         errorTextPW.text = "";
     }
 
-    void CloseEditPanel()
+    private void CloseEditPanel()
     {
         editPanel.SetActive(false);
     }
