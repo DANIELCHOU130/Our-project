@@ -21,23 +21,23 @@ public class OtherPlayerController : MonoBehaviour
     }
 
     public List<PlayerPiece> playerPieces = new List<PlayerPiece>();
-    private string apiUrl = "http://134.208.97.162:5000/it/ROOMAPI/api/room/positions";
+    private const string apiUrl = "http://134.208.97.162:5000/it/ROOMAPI/api/room/positions";
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(PollOtherPlayers());
     }
 
-    IEnumerator PollOtherPlayers()
+    private IEnumerator PollOtherPlayers()
     {
         while (true)
         {
-            yield return StartCoroutine(FetchPlayerPositions());
-            yield return new WaitForSeconds(1.5f); // 每 1.5 秒輪詢一次
+            yield return FetchPlayerPositions();
+            yield return new WaitForSeconds(1.5f);
         }
     }
 
-    IEnumerator FetchPlayerPositions()
+    private IEnumerator FetchPlayerPositions()
     {
         UnityWebRequest request = UnityWebRequest.Get(apiUrl);
         yield return request.SendWebRequest();
@@ -45,19 +45,16 @@ public class OtherPlayerController : MonoBehaviour
         if (request.result == UnityWebRequest.Result.Success)
         {
             string json = request.downloadHandler.text;
-            PlayerPosition[] positions = JsonHelper.FromJson<PlayerPosition>(json);
+            var positions = JsonHelper.FromJson<PlayerPosition>(json);
 
             foreach (var pos in positions)
             {
                 if (pos.playerName == NetworkClient.Instance.myPlayerName) continue;
 
-                foreach (var piece in playerPieces)
+                var piece = playerPieces.Find(p => p.playerName == pos.playerName);
+                if (piece != null)
                 {
-                    if (piece.playerName == pos.playerName)
-                    {
-                        StartCoroutine(MoveSmooth(piece.pieceObject.transform, new Vector3(pos.posX, pos.posY, 0f)));
-                        break;
-                    }
+                    StartCoroutine(MoveSmooth(piece.pieceObject.transform, new Vector3(pos.posX, pos.posY, 0f)));
                 }
             }
         }
@@ -67,11 +64,11 @@ public class OtherPlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator MoveSmooth(Transform piece, Vector3 targetPosition)
+    private IEnumerator MoveSmooth(Transform piece, Vector3 targetPosition)
     {
         Vector3 startPos = piece.position;
         float elapsedTime = 0f;
-        float duration = 0.5f;
+        const float duration = 0.5f;
 
         while (elapsedTime < duration)
         {
@@ -83,7 +80,6 @@ public class OtherPlayerController : MonoBehaviour
         piece.position = targetPosition;
     }
 
-    // ✅ 內嵌 JsonHelper：支援解析 JSON 陣列
     public static class JsonHelper
     {
         [System.Serializable]
@@ -94,9 +90,8 @@ public class OtherPlayerController : MonoBehaviour
 
         public static T[] FromJson<T>(string json)
         {
-            string newJson = "{\"Items\":" + json + "}";
-            Wrapper<T> wrapper = JsonUtility.FromJson<Wrapper<T>>(newJson);
-            return wrapper.Items;
+            string wrappedJson = "{\"Items\":" + json + "}";
+            return JsonUtility.FromJson<Wrapper<T>>(wrappedJson).Items;
         }
     }
 }

@@ -3064,6 +3064,7 @@ GameObject:
   - component: {fileID: 267492708}
   - component: {fileID: 267492707}
   - component: {fileID: 267492706}
+  - component: {fileID: 267492709}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -3192,6 +3193,8 @@ MonoBehaviour:
   homePanel: {fileID: 361848508}
   settingsPanel: {fileID: 655833656}
   informationPanel: {fileID: 265110075}
+  waitingPanel: {fileID: 0}
+  waitingPanelManager: {fileID: 0}
   inputAccount: {fileID: 1318144458}
   inputPassword: {fileID: 313507437}
   inputUsernameReg: {fileID: 459182733}
@@ -3206,6 +3209,8 @@ MonoBehaviour:
   btnInformation: {fileID: 1463909545}
   btnSettingsBack: {fileID: 1463909545}
   btnInformationBack: {fileID: 1463909545}
+  btnCreateGame: {fileID: 0}
+  btnJoinGame: {fileID: 0}
 --- !u!114 &267492703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3257,8 +3262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bd29b55b3a7453428604b46baf4d17f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiBaseUrl: http://134.208.97.162:5000/it/ESGJOIN/api/game
-  myPlayerName: 
+  playerName: 
 --- !u!114 &267492706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3302,6 +3306,18 @@ MonoBehaviour:
   serverIP2: 134.208.97.162
   serverPort2: 5567
   myPlayerName2: 
+--- !u!114 &267492709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 267492697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b926f6340af29c84ba5a98e4df951eb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &275662504
 GameObject:
   m_ObjectHideFlags: 0

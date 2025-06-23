@@ -8,7 +8,6 @@ public class dicechange : MonoBehaviour
 
     public move moveScript;
 
-    private int currentIndex = 0;
     private bool isRolling = false;
     private Coroutine rollingCoroutine;
 
@@ -19,14 +18,8 @@ public class dicechange : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isRolling)
+        if (Input.GetKeyDown(KeyCode.Space) && !isRolling && TurnManager.Instance.IsMyTurn())
         {
-            if (!TurnManager.Instance.IsMyTurn())
-            {
-                Debug.Log("不是你的回合，不能擲骰！");
-                return;
-            }
-
             RollDiceWithTimer();
         }
     }
@@ -53,10 +46,9 @@ public class dicechange : MonoBehaviour
         if (rollingFaces == null || rollingFaces.Length == 0) yield break;
 
         isRolling = true;
-
+        float elapsedTime = 0f;
         float rollDuration = 2.0f;
         float fixedSpeed = 0.1f;
-        float elapsedTime = 0f;
 
         while (elapsedTime < rollDuration)
         {
@@ -85,23 +77,21 @@ public class dicechange : MonoBehaviour
 
     void ShowNextRollingFace()
     {
-        if (rollingFaces == null || rollingFaces.Length == 0) return;
+        if (rollingFaces.Length == 0) return;
 
         int randomIndex = Random.Range(0, rollingFaces.Length);
         GetComponent<SpriteRenderer>().sprite = rollingFaces[randomIndex];
-
-        float randomRotation = Random.Range(-15f, 15f);
-        transform.rotation = Quaternion.Euler(0, 0, randomRotation);
-
-        float randomScale = Random.Range(0.9f, 1.1f);
-        transform.localScale = new Vector3(randomScale, randomScale, 1);
+        transform.rotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
+        float scale = Random.Range(0.9f, 1.1f);
+        transform.localScale = new Vector3(scale, scale, 1);
     }
 
     void ShowResultFace(int index)
     {
-        if (resultFaces == null || index < 0 || index >= resultFaces.Length) return;
-
-        GetComponent<SpriteRenderer>().sprite = resultFaces[index];
+        if (index >= 0 && index < resultFaces.Length)
+        {
+            GetComponent<SpriteRenderer>().sprite = resultFaces[index];
+        }
     }
 
     void HideAllDiceParts()
