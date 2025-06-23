@@ -1,155 +1,184 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
+using TMPro;
 using UnityEngine.UI;
 
-public class RoomManager : MonoBehaviour
+public class RoomManagerAPI : MonoBehaviour
 {
-    private string connectionString = "Data Source=134.208.97.162\\SQL2022;Initial Catalog=ESGGAMEDB;User ID=LAB;Password=NewStrongP@ssword2024;TrustServerCertificate=True;Connect Timeout=30";
-
-    public TMP_InputField roomIdInputField; // 房間 ID 輸入框
-    public TMP_Dropdown playerDropdown; // 玩家選單
-    public TMP_Text playerDataText; // 顯示玩家資訊
+    public TMP_InputField roomIdInputField;
+    public TMP_Dropdown playerDropdown;
+    public TMP_Text playerDataText;
     public Button resetButton;
     public Button roomGetButton;
 
     private List<int> playerIds = new List<int>();
+    private const string baseApiUrl = "http://134.208.97.162:5000/it/ROOMAPI/api/game";
 
     void Start()
     {
-        roomGetButton.onClick.AddListener(FetchRoomPlayers);
-        resetButton.onClick.AddListener(SetPlayersDataToZero);
-
-        playerDropdown.ClearOptions();
-        playerDataText.text = "請選擇玩家以顯示數據。";
-
-        playerDropdown.onValueChanged.AddListener(delegate { DisplayPlayerData(); });
-    }
-
-    // 查詢房間內玩家
-    public void FetchRoomPlayers()
-    {
-        string roomId = roomIdInputField.text.Trim();
-        if (string.IsNullOrEmpty(roomId))
+        if (roomGetButton != null)
         {
-            Debug.LogError("請輸入房間 ID！");
-            return;
+            roomGetButton.onClick.AddListener(() =>
+            {
+                string roomId = roomIdInputField?.text?.Trim();
+                if (!string.IsNullOrEmpty(roomId))
+                    StartCoroutine(FetchRoomPlayers(roomId));
+                else
+                    playerDataText.text = "請輸入房間 ID！";
+            });
+        }
+        else
+        {
+            Debug.LogWarning("roomGetButton 尚未綁定！");
         }
 
-        try
+        if (resetButton != null)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            resetButton.onClick.AddListener(() =>
             {
-                conn.Open();
-                string query = "SELECT gamerid FROM dbo.nowgamedata WHERE boardid = @roomId";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@roomId", roomId);
+                string roomId = roomIdInputField?.text?.Trim();
+                if (!string.IsNullOrEmpty(roomId))
+                    StartCoroutine(ResetPlayersData(roomId));
+                else
+                    playerDataText.text = "請輸入房間 ID！";
+            });
+        }
+        else
+        {
+            Debug.LogWarning("resetButton 尚未綁定！");
+        }
 
-                SqlDataReader reader = cmd.ExecuteReader();
+        if (playerDropdown != null)
+        {
+            playerDropdown.onValueChanged.AddListener(index =>
+            {
+                if (index >= 0 && index < playerIds.Count)
+                    StartCoroutine(FetchPlayerData(playerIds[index]));
+            });
+        }
+        else
+        {
+            Debug.LogWarning("playerDropdown 尚未綁定！");
+        }
+
+        if (playerDataText != null)
+            playerDataText.text = "請輸入房間 ID 並點擊查詢。";
+    }
+
+    // 查詢房間玩家列表
+    IEnumerator FetchRoomPlayers(string roomId)
+    {
+        string url = $"{baseApiUrl}/status/{roomId}";
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                playerDataText.text = $"取得玩家列表失敗: {request.error}";
+                Debug.LogError(request.error);
+            }
+            else
+            {
+                string raw = request.downloadHandler.text.Trim(); // 例如 "WAITING,3|4|5"
+                string[] parts = raw.Split(',');
+                if (parts.Length != 2)
+                {
+                    playerDataText.text = "API 回傳格式錯誤！";
+                    Debug.LogError("API 回傳格式錯誤：" + raw);
+                    yield break;
+                }
+
+                string[] playerIdStrings = parts[1].Split('|');
+                playerIds.Clear();
+                List<string> options = new List<string>();
+
+                foreach (var pidStr in playerIdStrings)
+                {
+                    if (int.TryParse(pidStr, out int pid))
+                    {
+                        playerIds.Add(pid);
+                        options.Add($"玩家 {pid}");
+                    }
+                }
 
                 playerDropdown.ClearOptions();
-                playerIds.Clear();
 
-                List<string> options = new List<string>();
-                while (reader.Read())
-                {
-                    int playerId = reader.GetInt32(0);
-                    playerIds.Add(playerId);
-                    options.Add($"玩家 {playerId}");
-                }
-
-                if (options.Count == 0)
+                if (playerIds.Count == 0)
                 {
                     options.Add("無玩家數據");
-                    playerDataText.text = "查詢結果：此房間無玩家數據記錄";
-                }
-
-                playerDropdown.AddOptions(options);
-            }
-        }
-        catch (SqlException ex)
-        {
-            Debug.LogError($"SQL 錯誤 - {ex.Message}\n{ex.StackTrace}");
-        }
-    }
-
-    // 顯示選中玩家的資訊
-    public void DisplayPlayerData()
-    {
-        int selectedIndex = playerDropdown.value;
-
-        if (playerIds.Count == 0 || selectedIndex < 0 || selectedIndex >= playerIds.Count)
-        {
-            playerDataText.text = "請選擇有效的玩家來顯示數據。";
-            return;
-        }
-
-        int playerId = playerIds[selectedIndex];
-
-        try
-        {
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                conn.Open();
-                string query = "SELECT gamermoney, gameresg FROM dbo.nowgamedata WHERE gamerid = @playerId";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@playerId", playerId);
-
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    float money = reader.IsDBNull(0) ? 0 : Convert.ToSingle(reader.GetValue(0));
-                    string esg = reader.IsDBNull(1) ? "無" : reader.GetString(1);
-                    playerDataText.text = $"金錢: {money}\nESG: {esg}";
+                    playerDataText.text = "此房間無玩家數據";
                 }
                 else
                 {
-                    playerDataText.text = "未找到該玩家的數據。";
+                    StartCoroutine(FetchPlayerData(playerIds[0]));
                 }
+
+                playerDropdown.AddOptions(options);
+                playerDropdown.value = 0;
+                playerDropdown.RefreshShownValue();
             }
-        }
-        catch (SqlException ex)
-        {
-            Debug.LogError($"SQL 錯誤: {ex.Message}");
-        }
-        catch (InvalidCastException ex)
-        {
-            Debug.LogError($"轉型失敗: {ex.Message}");
         }
     }
 
-    // 將該房間的玩家資料重設為 0
-    public void SetPlayersDataToZero()
+    // 取得玩家詳細資料
+    IEnumerator FetchPlayerData(int playerId)
     {
-        string roomId = roomIdInputField.text.Trim();
-        if (string.IsNullOrEmpty(roomId))
+        string url = $"{baseApiUrl}/player/{playerId}";
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
-            Debug.LogError("請輸入房間 ID！");
-            return;
-        }
+            yield return request.SendWebRequest();
 
-        try
-        {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            if (request.result != UnityWebRequest.Result.Success)
             {
-                conn.Open();
-                string query = "UPDATE dbo.nowgamedata SET gamermoney = 0, gameresg = '0' WHERE boardid = @roomId";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@roomId", roomId);
-
-                int rowsAffected = cmd.ExecuteNonQuery();
-                Debug.Log($"已將 {rowsAffected} 位玩家數據重置為 0。");
-
-                playerDataText.text = "所有玩家數據已重置！";
-                FetchRoomPlayers();
+                playerDataText.text = $"取得玩家資料失敗: {request.error}";
+                Debug.LogError(request.error);
+            }
+            else
+            {
+                string json = request.downloadHandler.text;
+                try
+                {
+                    PlayerData data = JsonUtility.FromJson<PlayerData>(json);
+                    playerDataText.text = $"金錢: {data.gamermoney}\nESG: {data.gameresg}";
+                }
+                catch (Exception e)
+                {
+                    playerDataText.text = "解析玩家資料失敗";
+                    Debug.LogError("JSON 解析錯誤：" + e.Message + "\n回傳內容：" + json);
+                }
             }
         }
-        catch (SqlException ex)
+    }
+
+    // 重設玩家資料
+    IEnumerator ResetPlayersData(string roomId)
+    {
+        string url = $"{baseApiUrl}/reset/{roomId}";
+        using (UnityWebRequest request = UnityWebRequest.PostWwwForm(url, ""))
         {
-            Debug.LogError($"SQL 錯誤: {ex.Message}");
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                playerDataText.text = $"重置失敗: {request.error}";
+                Debug.LogError(request.error);
+            }
+            else
+            {
+                playerDataText.text = "所有玩家資料已重置！";
+                StartCoroutine(FetchRoomPlayers(roomId));
+            }
         }
+    }
+
+    [Serializable]
+    private class PlayerData
+    {
+        public float gamermoney;
+        public string gameresg;
     }
 }

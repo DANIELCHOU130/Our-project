@@ -6,37 +6,28 @@ using System.Collections;
 
 public class CardDisplay : MonoBehaviour
 {
-    // 面板
     public GameObject panelS, panelE, panelM, panelG, panelC;
-    public GameObject viewOnlyPanel; // 🔥 新增：觀看用小面板
-    public TMP_Text viewOnlyCardNameText;
-    public TMP_Text viewOnlyCardContentText;
-    public TMP_Text viewOnlyCardMoneyText;
-    public TMP_Text viewOnlyCardESGText;
-    public TMP_Text viewOnlyCardKnowText;
-    public TMP_Text viewOnlyPlayerNameText;
+    public GameObject viewOnlyPanel;
+    public TMP_Text viewOnlyCardNameText, viewOnlyCardContentText, viewOnlyCardMoneyText, viewOnlyCardESGText, viewOnlyCardKnowText, viewOnlyPlayerNameText;
 
-    // 各自的 TextMeshProUGUI 元素
     public TextMeshProUGUI cardNameTextS, cardContentTextS, cardMoneyTextS, cardESGTextS, cardKnowTextS, cardTypeTextS;
     public TextMeshProUGUI cardNameTextE, cardContentTextE, cardMoneyTextE, cardESGTextE, cardKnowTextE, cardTypeTextE;
     public TextMeshProUGUI cardNameTextM;
     public TextMeshProUGUI cardNameTextG, cardContentTextG, cardMoneyTextG, cardESGTextG, cardKnowTextG, cardTypeTextG;
 
-    // Panel C 元素
     public Button chooseButton1, chooseButton2, chooseButton3, chooseButton4;
     public TextMeshProUGUI chooseText1, chooseText2, chooseText3, chooseText4;
 
-    // 顯示卡片類型文字
     public TMP_Text textDisplay;
-
-    // 儲存變動後的值
-    private float modifiedESG;
-    private float modifiedMoney;
-
-    // 關閉按鈕
     public Button closeButtonS, closeButtonE, closeButtonM, closeButtonG;
 
-    private CardData currentCard; // 🔥 儲存目前抽到的卡片
+    public GameObject errorPanel;
+    public TMP_Text errorText;
+    public Button closeErrorButton;
+
+    private CardData currentCard;
+    private float modifiedMoney;
+    private float modifiedESG;
 
     void Start()
     {
@@ -45,12 +36,14 @@ public class CardDisplay : MonoBehaviour
         panelM.SetActive(false);
         panelG.SetActive(false);
         panelC.SetActive(false);
-        viewOnlyPanel.SetActive(false); // 🔥 觀看面板預設關閉
+        viewOnlyPanel.SetActive(false);
+        errorPanel.SetActive(false);
 
         closeButtonS.onClick.AddListener(() => ClosePanel(panelS));
         closeButtonE.onClick.AddListener(() => ClosePanel(panelE));
         closeButtonM.onClick.AddListener(() => ClosePanel(panelM));
         closeButtonG.onClick.AddListener(() => ClosePanel(panelG));
+        closeErrorButton.onClick.AddListener(() => errorPanel.SetActive(false));
     }
 
     public void ShowCard()
@@ -77,12 +70,9 @@ public class CardDisplay : MonoBehaviour
                 break;
             default:
                 Debug.LogError("無效的類型: " + cardType);
-                return;
+                break;
         }
     }
-    public GameObject errorPanel; // 錯誤提示框的 Panel
-    public TMP_Text errorText; // 顯示錯誤信息的 TextMeshPro 元素
-    public Button closeErrorButton; // 關閉錯誤提示框的按鈕
 
     private IEnumerator FetchCardData(string dataType, GameObject panel, TextMeshProUGUI nameText, TextMeshProUGUI contentText, TextMeshProUGUI moneyText, TextMeshProUGUI esgText, TextMeshProUGUI knowText, TextMeshProUGUI typeText)
     {
@@ -90,67 +80,53 @@ public class CardDisplay : MonoBehaviour
         UnityWebRequest request = UnityWebRequest.Get(url);
         request.SetRequestHeader("Content-Type", "application/json");
         request.certificateHandler = new BypassCertificate();
+
         yield return request.SendWebRequest();
 
         if (request.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError("API 請求失敗: " + request.error);
-
-            // 顯示錯誤提示框
-            errorText.text = "無法連接到伺服器，請稍後再試！"; // 更新錯誤信息
-            errorPanel.SetActive(true); // 顯示錯誤提示框
-
-            // 按鈕點擊事件，用來關閉錯誤提示框
-            closeErrorButton.onClick.RemoveAllListeners();
-            closeErrorButton.onClick.AddListener(() => errorPanel.SetActive(false));
-
-            yield break; // 停止執行後續操作
+            errorText.text = "無法連接到伺服器，請稍後再試！";
+            errorPanel.SetActive(true);
+            yield break;
         }
-        else
+
+        string json = request.downloadHandler.text;
+        currentCard = JsonUtility.FromJson<CardData>(json);
+
+        nameText.text = currentCard.cardname;
+        contentText.text = "內容: " + currentCard.cardin;
+        moneyText.text = "金錢: " + currentCard.cardmoney;
+        esgText.text = "ESG: " + currentCard.cardesg;
+        knowText.text = "背景知識: " + currentCard.cardknow;
+        typeText.text = "種類: " + currentCard.cardtype;
+
+        panelC.SetActive(true);
+        chooseText1.text = currentCard.choose1;
+        chooseText2.text = currentCard.choose2;
+        chooseText3.text = currentCard.choose3;
+        chooseText4.text = currentCard.choose4;
+
+        float originalMoney = currentCard.cardmoney;
+        float originalESG = currentCard.cardesg;
+
+        chooseButton1.onClick.RemoveAllListeners();
+        chooseButton1.onClick.AddListener(() => ApplyChoice(1, originalMoney, originalESG, contentText));
+
+        chooseButton2.onClick.RemoveAllListeners();
+        chooseButton2.onClick.AddListener(() => ApplyChoice(2, originalMoney, originalESG, contentText));
+
+        chooseButton3.onClick.RemoveAllListeners();
+        chooseButton3.onClick.AddListener(() => ApplyChoice(3, originalMoney, originalESG, contentText));
+
+        chooseButton4.onClick.RemoveAllListeners();
+        chooseButton4.onClick.AddListener(() => ApplyChoice(4, originalMoney, originalESG, contentText));
+
+        if (NetworkClient.Instance != null && !string.IsNullOrEmpty(NetworkClient.Instance.playerName))
         {
-            string json = request.downloadHandler.text;
-            currentCard = JsonUtility.FromJson<CardData>(json); // 🔥 存起來
-
-            // 顯示卡片資料
-            nameText.text = currentCard.cardname;
-            contentText.text = "內容: " + currentCard.cardin;
-            moneyText.text = "金錢: " + currentCard.cardmoney;
-            esgText.text = "ESG: " + currentCard.cardesg;
-            knowText.text = "背景知識: " + currentCard.cardknow;
-            typeText.text = "種類: " + currentCard.cardtype;
-
-            // 顯示 Panel C（選項）
-            panelC.SetActive(true);
-
-            chooseText1.text = currentCard.choose1;
-            chooseText2.text = currentCard.choose2;
-            chooseText3.text = currentCard.choose3;
-            chooseText4.text = currentCard.choose4;
-
-            float originalMoney = currentCard.cardmoney;
-            float originalESG = currentCard.cardesg;
-
-            chooseButton1.onClick.RemoveAllListeners();
-            chooseButton1.onClick.AddListener(() => ApplyChoice(1, originalMoney, originalESG, contentText));
-
-            chooseButton2.onClick.RemoveAllListeners();
-            chooseButton2.onClick.AddListener(() => ApplyChoice(2, originalMoney, originalESG, contentText));
-
-            chooseButton3.onClick.RemoveAllListeners();
-            chooseButton3.onClick.AddListener(() => ApplyChoice(3, originalMoney, originalESG, contentText));
-
-            chooseButton4.onClick.RemoveAllListeners();
-            chooseButton4.onClick.AddListener(() => ApplyChoice(4, originalMoney, originalESG, contentText));
-
-            // 🔥 廣播抽卡結果
-            if (NetworkClient.Instance != null && !string.IsNullOrEmpty(NetworkClient.Instance.myPlayerName))
-            {
-                string cardMessage = $"CARD:{NetworkClient.Instance.myPlayerName},{currentCard.cardname},{currentCard.cardin},{currentCard.cardmoney},{currentCard.cardesg},{currentCard.cardknow},{currentCard.cardtype},{currentCard.choose1},{currentCard.choose2},{currentCard.choose3},{currentCard.choose4}";
-                NetworkClient.Instance.SendMessageToServer(cardMessage);
-            }
+            string cardMessage = $"CARD:{NetworkClient.Instance.playerName},{currentCard.cardname},{currentCard.cardin},{currentCard.cardmoney},{currentCard.cardesg},{currentCard.cardknow},{currentCard.cardtype},{currentCard.choose1},{currentCard.choose2},{currentCard.choose3},{currentCard.choose4}";
+            NetworkClient.Instance.SendMessageToServer(cardMessage);
         }
     }
-
 
     private void ApplyChoice(int choice, float originalMoney, float originalESG, TextMeshProUGUI contentText)
     {
@@ -174,20 +150,15 @@ public class CardDisplay : MonoBehaviour
                 break;
         }
 
-        // 顯示選擇結果
         contentText.text += $"\n\n[選擇結果]\n金錢變化後: {modifiedMoney:F1}\nESG變化後: {modifiedESG:F1}";
-
-        // 關閉選項面板
         panelC.SetActive(false);
-
-        // 🔥 延遲一段時間再換人
         StartCoroutine(DelayedTurnEnd());
     }
 
     private IEnumerator DelayedTurnEnd()
     {
-        yield return new WaitForSeconds(3f); // 等 3 秒讓玩家閱讀
-        TurnManager.Instance.EndTurn(); // 換下一位
+        yield return new WaitForSeconds(3f);
+        TurnManager.Instance.EndTurn();
     }
 
     private void ClosePanel(GameObject panel)
