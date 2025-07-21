@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using System.Security.Cryptography;
+using System.Linq;
 
 public class UIManager : MonoBehaviour
 {
@@ -94,7 +95,10 @@ public class UIManager : MonoBehaviour
     void Login()
     {
         string account = inputAccount.text.Trim();
-        string password = inputPassword.text.Trim();
+        string password = inputPassword.text.Trim(); // 確保字串一致性
+
+        Debug.Log($"原始密碼輸入: [{password}], 長度: {password.Length}");
+        Debug.Log("Bytes: " + string.Join(",", Encoding.Unicode.GetBytes(password)));
 
         if (account == "backdoor" && password == "backdoor")
         {
@@ -104,11 +108,13 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        string encryptedPassword = GetSHA256(password);
+        string encryptedPassword = GetSHA256(password);  // 這裡 GetSHA256 內部要用 Encoding.Unicode
         Debug.Log($"加密後密碼: {encryptedPassword}");
-        StartCoroutine(SendLoginRequest(account, encryptedPassword)); 
 
+        StartCoroutine(SendLoginRequest(account, encryptedPassword));
     }
+
+
 
     IEnumerator SendLoginRequest(string account, string encryptedPassword)
     {
@@ -155,7 +161,7 @@ public class UIManager : MonoBehaviour
     {
         string username = inputUsernameReg.text.Trim();
         string account = inputAccountReg.text.Trim();
-        string password = inputPasswordReg.text.Trim();
+        string password = CleanInput(inputPasswordReg.text); 
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(account) || string.IsNullOrEmpty(password))
         {
@@ -200,9 +206,9 @@ public class UIManager : MonoBehaviour
 
     string GetSHA256(string input)
     {
+        byte[] bytes = Encoding.Unicode.GetBytes(input);  // 這裡一定要是 Encoding.Unicode
         using (SHA256 sha256 = SHA256.Create())
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(input);
             byte[] hash = sha256.ComputeHash(bytes);
             StringBuilder sb = new StringBuilder();
             foreach (byte b in hash)
@@ -211,6 +217,13 @@ public class UIManager : MonoBehaviour
         }
     }
 
+
+    string CleanInput(string input)
+    {
+        return new string(input
+            .Where(c => !char.IsControl(c) && !char.IsWhiteSpace(c))
+            .ToArray());
+    }
     // 設定頁面
     void ShowSettingsPanel()
     {

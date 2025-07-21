@@ -122,7 +122,8 @@ public class TurnManager : MonoBehaviour
         if (IsMyTurn())
         {
             Debug.Log("⏰ 40秒未動作，自動擲骰！");
-            FindObjectOfType<dicechange>()?.RollDiceAuto();
+            FindFirstObjectByType<dicechange>()?.RollDiceAuto();
+
         }
     }
 
