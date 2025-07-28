@@ -188,11 +188,12 @@ public class UIManager : MonoBehaviour
         if (www.result != UnityWebRequest.Result.Success)
         {
             Debug.Log("註冊失敗: " + www.error);
+            Debug.Log("伺服器回傳錯誤內容: " + www.downloadHandler.text); // 印出後端訊息
         }
         else
         {
             string result = www.downloadHandler.text.Trim();
-            if (result == "Success")
+            if (result == "RegisterSuccess")
             {
                 Debug.Log("註冊成功");
                 BackToLogin();
@@ -202,6 +203,7 @@ public class UIManager : MonoBehaviour
                 Debug.Log("註冊錯誤：" + result);
             }
         }
+
     }
 
     string GetSHA256(string input)

@@ -22,13 +22,16 @@ public class NetworkClient2 : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("NetworkClient2 產生於場景：" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+
         if (Instance2 == null)
         {
             Instance2 = this;
-            DontDestroyOnLoad(gameObject); // 不要被切場景破壞
+            DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance2 != this)
         {
+            Debug.LogWarning("重複的 NetworkClient2 被銷毀");
             Destroy(gameObject);
         }
     }
