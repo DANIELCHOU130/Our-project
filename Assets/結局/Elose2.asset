@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03daa78809117a04db61b4a5f86ba33a, type: 3}
+  m_Name: Elose2
+  m_EditorClassIdentifier: 
+  endingTitle: "\u751F\u614B\u5805\u6301\u8005(\u4F4E)"
+  endingLines:
+  - "\u4F60\u66FE\u9AD8\u8209\u74B0\u4FDD\u7684\u65D7\u5E5F\uFF0C\u537B\u5728\u5229\u76CA\u7684\u6D2A\u6D41\u4E2D\u8B93\u5B83\u892A\u8272\u3002"
+  - "\u7576\u516C\u53F8\u5012\u4E0B\uFF0C\u7559\u4E0B\u7684\u4E0D\u662F\u4EE4\u4EBA\u50B3\u980C\u7684\u6210\u5C31\uFF0C\u800C\u662F\u4E00\u5834\u7A7A\u6D1E\u7684\u5BA3\u8A00\u3002"
+  - "\u5F8C\u4EBA\u8AC7\u8D77\u4F60\u6642\uFF0C\u4E0D\u6703\u8A18\u5F97\u4F60\u7684\u7DA0\u8272\u7406\u5FF5\uFF0C\u53EA\u6703\u8A18\u5F97\u4F60\u932F\u904E\u7684\u6BCF\u4E00\u6B21\u884C\u52D5\u6A5F\u6703\u3002"
+  - "\u7406\u5FF5\u82E5\u7F3A\u4E4F\u5BE6\u8E10\uFF0C\u7D42\u5C07\u5316\u70BA\u98A8\u4E2D\u7684\u7070\u71FC\u3002"
+  bgmClip: {fileID: 8300000, guid: 7c27f0b1ca15bf64e96401d2fc0fd849, type: 3}
